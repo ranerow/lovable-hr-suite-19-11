@@ -1,0 +1,152 @@
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Search, Plus, Filter } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
+export default function Employees() {
+  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const { data: employees, isLoading } = useQuery({
+    queryKey: ["employees"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("employees")
+        .select(`
+          *,
+          role:roles(name),
+          department:departments(name),
+          unit:units(name)
+        `)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const filteredEmployees = employees?.filter((emp) =>
+    emp.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    emp.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const getStatusColor = (status: string) => {
+    const colors: Record<string, string> = {
+      Ativo: "bg-success text-success-foreground",
+      Férias: "bg-info text-info-foreground",
+      Afastado: "bg-warning text-warning-foreground",
+      Demitido: "bg-destructive text-destructive-foreground",
+    };
+    return colors[status] || "bg-muted text-muted-foreground";
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Funcionários</h1>
+          <p className="text-muted-foreground">Gerencie sua equipe</p>
+        </div>
+        <Button onClick={() => navigate("/employees/new")} className="gap-2">
+          <Plus className="h-4 w-4" />
+          Novo Funcionário
+        </Button>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por nome ou email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Button variant="outline" className="gap-2">
+              <Filter className="h-4 w-4" />
+              Filtros
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="text-center py-8 text-muted-foreground">Carregando...</div>
+          ) : filteredEmployees && filteredEmployees.length > 0 ? (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Cargo</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Unidade</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredEmployees.map((employee) => (
+                    <TableRow 
+                      key={employee.id}
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => navigate(`/employees/${employee.id}`)}
+                    >
+                      <TableCell className="font-medium">{employee.full_name}</TableCell>
+                      <TableCell className="text-muted-foreground">{employee.email}</TableCell>
+                      <TableCell>{employee.role?.name || "-"}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{employee.contract_type}</Badge>
+                      </TableCell>
+                      <TableCell>{employee.unit?.name || "-"}</TableCell>
+                      <TableCell>
+                        <Badge className={getStatusColor(employee.status)}>
+                          {employee.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/employees/${employee.id}`);
+                          }}
+                        >
+                          Ver
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground mb-4">Nenhum funcionário encontrado</p>
+              <Button onClick={() => navigate("/employees/new")}>
+                Cadastrar primeiro funcionário
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
