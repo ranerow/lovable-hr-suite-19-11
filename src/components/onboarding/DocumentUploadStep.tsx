@@ -81,9 +81,16 @@ export function DocumentUploadStep({ contractType, token, onNext, onBack }: Docu
       setDocuments(newDocuments);
 
       toast.success("Documento enviado com sucesso!");
-    } catch (error) {
-      console.error("Erro ao fazer upload:", error);
-      toast.error("Erro ao enviar documento");
+    } catch (error: any) {
+      console.error("Erro completo ao fazer upload:", {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code,
+        statusCode: error.statusCode,
+        error: error
+      });
+      toast.error(`Erro ao enviar documento: ${error.message || 'Erro desconhecido'}`);
     } finally {
       setUploading(false);
     }
