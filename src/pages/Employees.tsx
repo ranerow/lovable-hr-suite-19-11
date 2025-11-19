@@ -15,10 +15,19 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Search, Plus, Filter } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function Employees() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [contractFilter, setContractFilter] = useState<string>("all");
 
   const { data: employees, isLoading } = useQuery({
     queryKey: ["employees"],
@@ -38,10 +47,14 @@ export default function Employees() {
     },
   });
 
-  const filteredEmployees = employees?.filter((emp) =>
-    emp.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    emp.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredEmployees = employees?.filter((emp) => {
+    const matchesSearch = emp.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      emp.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      emp.cpf.includes(searchTerm);
+    const matchesStatus = statusFilter === "all" || emp.status === statusFilter;
+    const matchesContract = contractFilter === "all" || emp.contract_type === contractFilter;
+    return matchesSearch && matchesStatus && matchesContract;
+  });
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
@@ -68,20 +81,49 @@ export default function Employees() {
 
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por nome ou email..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por nome, email ou CPF..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
             </div>
-            <Button variant="outline" className="gap-2">
-              <Filter className="h-4 w-4" />
-              Filtros
-            </Button>
+            <div className="flex items-center gap-4">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os status</SelectItem>
+                  <SelectItem value="Ativo">Ativo</SelectItem>
+                  <SelectItem value="Férias">Férias</SelectItem>
+                  <SelectItem value="Afastado">Afastado</SelectItem>
+                  <SelectItem value="Demitido">Demitido</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={contractFilter} onValueChange={setContractFilter}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Tipo de Contrato" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os tipos</SelectItem>
+                  <SelectItem value="CLT">CLT</SelectItem>
+                  <SelectItem value="PJ">PJ</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button variant="outline" size="sm" onClick={() => {
+                setSearchTerm("");
+                setStatusFilter("all");
+                setContractFilter("all");
+              }}>
+                Limpar Filtros
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
