@@ -346,6 +346,50 @@ export type Database = {
           },
         ]
       }
+      employee_status_history: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          created_at: string | null
+          employee_id: string
+          id: string
+          new_status: string
+          notes: string | null
+          previous_status: string | null
+          reason: string | null
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          created_at?: string | null
+          employee_id: string
+          id?: string
+          new_status: string
+          notes?: string | null
+          previous_status?: string | null
+          reason?: string | null
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          created_at?: string | null
+          employee_id?: string
+          id?: string
+          new_status?: string
+          notes?: string | null
+          previous_status?: string | null
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_status_history_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employee_trainings: {
         Row: {
           attendance_status: string | null

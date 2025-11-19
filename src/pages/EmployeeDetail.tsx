@@ -21,6 +21,7 @@ import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import DocumentUpload from "@/components/DocumentUpload";
 import DocumentList from "@/components/DocumentList";
+import StatusHistory from "@/components/StatusHistory";
 
 export default function EmployeeDetail() {
   const { id } = useParams();
@@ -188,9 +189,10 @@ export default function EmployeeDetail() {
       </Card>
 
       <Tabs defaultValue="personal" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="personal">Dados Pessoais</TabsTrigger>
           <TabsTrigger value="documents">Documentos</TabsTrigger>
+          <TabsTrigger value="history">Histórico</TabsTrigger>
           <TabsTrigger value="timesheet">Histórico de Ponto</TabsTrigger>
           <TabsTrigger value="additional">Informações</TabsTrigger>
         </TabsList>
@@ -459,9 +461,13 @@ export default function EmployeeDetail() {
                   </Card>
                 </>
               )}
-            </TabsContent>
+        </TabsContent>
 
-            <TabsContent value="timesheet" className="space-y-4">
+        <TabsContent value="history" className="space-y-4">
+          <StatusHistory employeeId={id!} />
+        </TabsContent>
+
+        <TabsContent value="timesheet" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Histórico de Ponto - Últimos 30 dias</CardTitle>
@@ -587,6 +593,10 @@ export default function EmployeeDetail() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="history" className="space-y-4">
+          <StatusHistory employeeId={id!} />
         </TabsContent>
       </Tabs>
     </div>
