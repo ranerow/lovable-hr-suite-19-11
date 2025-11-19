@@ -168,18 +168,43 @@ export default function OnboardingPortal() {
 
       if (employeeError) throw employeeError;
 
-      // Mover documentos para pasta definitiva e registrar
-      for (const doc of documents.filter(d => d.url)) {
-        // Registrar documento
-        await supabase
+      // Salvar documentos
+      const documentsToSave = documents.filter(d => d.url);
+      console.log("📄 Salvando documentos:", documentsToSave.length);
+
+      for (const doc of documentsToSave) {
+        console.log("📄 Inserindo documento:", doc.type, doc.label);
+        
+        const { data, error } = await supabase
           .from("employee_documents")
           .insert({
             employee_id: invitation.employee_id,
             document_type: doc.type,
             file_name: doc.label,
             file_url: doc.url,
-          });
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error("❌ Erro ao salvar documento:", error);
+          throw new Error(`Erro ao salvar ${doc.label}: ${error.message}`);
+        }
+        
+        console.log("✅ Documento salvo:", data);
       }
+
+      // Verificar se documentos foram salvos
+      const { data: savedDocs, error: verifyError } = await supabase
+        .from("employee_documents")
+        .select("*")
+        .eq("employee_id", invitation.employee_id);
+
+      if (verifyError) {
+        console.error("❌ Erro ao verificar documentos:", verifyError);
+      }
+
+      console.log(`✅ Total de documentos salvos: ${savedDocs?.length || 0}`);
 
       // Marcar convite como concluído
       console.log("Finalizando convite:", invitation.id);
