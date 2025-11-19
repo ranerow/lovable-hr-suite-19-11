@@ -166,7 +166,8 @@ export default function OnboardingPortal() {
       }
 
       // Marcar convite como concluído
-      await supabase
+      console.log("Finalizando convite:", invitation.id);
+      const { error: updateError } = await supabase
         .from("onboarding_invitations")
         .update({
           status: "concluido",
@@ -174,6 +175,13 @@ export default function OnboardingPortal() {
           completion_percentage: 100,
         })
         .eq("id", invitation.id);
+
+      if (updateError) {
+        console.error("❌ Erro ao atualizar status do convite:", updateError);
+        throw new Error(`Falha ao finalizar convite: ${updateError.message}`);
+      }
+      
+      console.log("✅ Convite finalizado com sucesso");
 
       // Notificar RH
       await supabase.functions.invoke("notify-rh-onboarding-complete", {
