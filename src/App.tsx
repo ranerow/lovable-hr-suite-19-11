@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Employees from "./pages/Employees";
@@ -38,26 +39,26 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/dashboard" element={<AppLayout><Dashboard /></AppLayout>} />
-        <Route path="/employees" element={<AppLayout><Employees /></AppLayout>} />
-        <Route path="/employees/new" element={<AppLayout><EmployeeForm /></AppLayout>} />
-        <Route path="/employees/:id" element={<AppLayout><EmployeeDetail /></AppLayout>} />
-        <Route path="/employees/:id/edit" element={<AppLayout><EmployeeForm /></AppLayout>} />
-            <Route path="/departments" element={<AppLayout><Departments /></AppLayout>} />
-            <Route path="/roles" element={<AppLayout><Roles /></AppLayout>} />
-            <Route path="/units" element={<AppLayout><Units /></AppLayout>} />
-            <Route path="/timesheets" element={<AppLayout><Timesheets /></AppLayout>} />
-            <Route path="/benefits" element={<AppLayout><Benefits /></AppLayout>} />
-            <Route path="/vacations" element={<AppLayout><Vacations /></AppLayout>} />
-            <Route path="/trainings" element={<AppLayout><Trainings /></AppLayout>} />
-            <Route path="/pj-contracts" element={<AppLayout><PJContracts /></AppLayout>} />
-            <Route path="/recruitment" element={<AppLayout><Recruitment /></AppLayout>} />
-            <Route path="/compliance" element={<AppLayout><Compliance /></AppLayout>} />
-            <Route path="/reports" element={<AppLayout><Reports /></AppLayout>} />
-            <Route path="/permissions" element={<AppLayout><Permissions /></AppLayout>} />
-            <Route path="/finance-rh" element={<AppLayout><FinanceRH /></AppLayout>} />
-            <Route path="/documents" element={<AppLayout><Documents /></AppLayout>} />
-            <Route path="/settings" element={<AppLayout><Settings /></AppLayout>} />
+            <Route path="/dashboard" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
+            <Route path="/employees" element={<ProtectedRoute><AppLayout><Employees /></AppLayout></ProtectedRoute>} />
+            <Route path="/employees/new" element={<ProtectedRoute><AppLayout><EmployeeForm /></AppLayout></ProtectedRoute>} />
+            <Route path="/employees/:id" element={<ProtectedRoute><AppLayout><EmployeeDetail /></AppLayout></ProtectedRoute>} />
+            <Route path="/employees/:id/edit" element={<ProtectedRoute><AppLayout><EmployeeForm /></AppLayout></ProtectedRoute>} />
+            <Route path="/departments" element={<ProtectedRoute><AppLayout><Departments /></AppLayout></ProtectedRoute>} />
+            <Route path="/roles" element={<ProtectedRoute><AppLayout><Roles /></AppLayout></ProtectedRoute>} />
+            <Route path="/units" element={<ProtectedRoute><AppLayout><Units /></AppLayout></ProtectedRoute>} />
+            <Route path="/timesheets" element={<ProtectedRoute><AppLayout><Timesheets /></AppLayout></ProtectedRoute>} />
+            <Route path="/benefits" element={<ProtectedRoute><AppLayout><Benefits /></AppLayout></ProtectedRoute>} />
+            <Route path="/vacations" element={<ProtectedRoute><AppLayout><Vacations /></AppLayout></ProtectedRoute>} />
+            <Route path="/trainings" element={<ProtectedRoute><AppLayout><Trainings /></AppLayout></ProtectedRoute>} />
+            <Route path="/pj-contracts" element={<ProtectedRoute><AppLayout><PJContracts /></AppLayout></ProtectedRoute>} />
+            <Route path="/recruitment" element={<ProtectedRoute><AppLayout><Recruitment /></AppLayout></ProtectedRoute>} />
+            <Route path="/compliance" element={<ProtectedRoute><AppLayout><Compliance /></AppLayout></ProtectedRoute>} />
+            <Route path="/reports" element={<ProtectedRoute><AppLayout><Reports /></AppLayout></ProtectedRoute>} />
+            <Route path="/permissions" element={<ProtectedRoute><AppLayout><Permissions /></AppLayout></ProtectedRoute>} />
+            <Route path="/finance-rh" element={<ProtectedRoute><AppLayout><FinanceRH /></AppLayout></ProtectedRoute>} />
+            <Route path="/documents" element={<ProtectedRoute><AppLayout><Documents /></AppLayout></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><AppLayout><Settings /></AppLayout></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

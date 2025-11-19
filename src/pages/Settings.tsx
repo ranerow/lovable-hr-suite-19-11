@@ -7,21 +7,167 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { Building2, Bell, Shield, Plug } from "lucide-react";
+import { Building2, Bell, Shield, Plug, Database } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Settings() {
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(false);
 
   const handleSave = async () => {
     setIsSaving(true);
-    // Simulate save
     await new Promise(resolve => setTimeout(resolve, 1000));
     setIsSaving(false);
     toast({
       title: "Configurações salvas",
       description: "Suas alterações foram salvas com sucesso.",
     });
+  };
+
+  const loadTestData = async () => {
+    setIsLoadingData(true);
+    try {
+      // Criar Unidades
+      const { data: units } = await supabase.from("units").insert([
+        { code: "MTZ", name: "Matriz", city: "São Paulo", state: "SP", address: "Av. Paulista, 1000" },
+        { code: "FIL01", name: "Filial Rio", city: "Rio de Janeiro", state: "RJ", address: "Av. Atlântica, 500" },
+        { code: "FIL02", name: "Filial BH", city: "Belo Horizonte", state: "MG", address: "Av. Afonso Pena, 200" },
+      ]).select();
+
+      // Criar Departamentos
+      const { data: departments } = await supabase.from("departments").insert([
+        { code: "TI", name: "Tecnologia da Informação", description: "Infraestrutura e desenvolvimento" },
+        { code: "RH", name: "Recursos Humanos", description: "Gestão de pessoas" },
+        { code: "FIN", name: "Financeiro", description: "Controladoria e contabilidade" },
+        { code: "COM", name: "Comercial", description: "Vendas e atendimento" },
+        { code: "OPS", name: "Operações", description: "Produção e logística" },
+      ]).select();
+
+      // Criar Cargos
+      const { data: roles } = await supabase.from("roles").insert([
+        { code: "DEV", name: "Desenvolvedor", level: 3 },
+        { code: "ANLST", name: "Analista", level: 4 },
+        { code: "COORD", name: "Coordenador", level: 5 },
+        { code: "GER", name: "Gerente", level: 6 },
+        { code: "DIR", name: "Diretor", level: 7 },
+        { code: "AUX", name: "Auxiliar", level: 2 },
+        { code: "ASS", name: "Assistente", level: 3 },
+      ]).select();
+
+      // Criar Funcionários CLT
+      const cltEmployees = [];
+      for (let i = 1; i <= 30; i++) {
+        cltEmployees.push({
+          full_name: `Colaborador CLT ${i}`,
+          email: `clt${i}@empresa.com`,
+          cpf: `${String(i).padStart(11, "0")}`,
+          phone: `(11) 9${String(i).padStart(8, "0")}`,
+          contract_type: "CLT",
+          hire_date: new Date(2023, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toISOString().split("T")[0],
+          salary: 3000 + Math.floor(Math.random() * 7000),
+          workload: 40,
+          status: ["Ativo", "Férias"][Math.floor(Math.random() * 2)],
+          unit_id: units?.[Math.floor(Math.random() * (units?.length || 1))]?.id,
+          department_id: departments?.[Math.floor(Math.random() * (departments?.length || 1))]?.id,
+          role_id: roles?.[Math.floor(Math.random() * (roles?.length || 1))]?.id,
+          shift_type: ["diurno", "noturno", "misto"][Math.floor(Math.random() * 3)],
+          ctps_number: String(10000 + i),
+          ctps_series: String(1000 + i),
+          ctps_state: "SP",
+          pis_pasep: String(20000000000 + i),
+        });
+      }
+
+      // Criar Funcionários PJ
+      const pjEmployees = [];
+      for (let i = 1; i <= 20; i++) {
+        pjEmployees.push({
+          full_name: `Prestador PJ ${i}`,
+          email: `pj${i}@empresa.com`,
+          cpf: `${String(100 + i).padStart(11, "0")}`,
+          phone: `(11) 8${String(i).padStart(8, "0")}`,
+          contract_type: "PJ",
+          hire_date: new Date(2023, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toISOString().split("T")[0],
+          monthly_value: 5000 + Math.floor(Math.random() * 10000),
+          workload: 40,
+          status: "Ativo",
+          unit_id: units?.[Math.floor(Math.random() * (units?.length || 1))]?.id,
+          department_id: departments?.[Math.floor(Math.random() * (departments?.length || 1))]?.id,
+          role_id: roles?.[Math.floor(Math.random() * (roles?.length || 1))]?.id,
+          cnpj: `${String(10000000 + i).padStart(14, "0")}`,
+          company_name: `Empresa PJ ${i} LTDA`,
+          pj_type: ["empresa", "autonomo"][Math.floor(Math.random() * 2)],
+          service_scope: "Prestação de serviços especializados",
+          legal_representative: `Representante ${i}`,
+          contract_start_date: new Date(2023, 0, 1).toISOString().split("T")[0],
+          contract_end_date_pj: new Date(2024, 11, 31).toISOString().split("T")[0],
+          auto_renewal: Math.random() > 0.5,
+        });
+      }
+
+      const { data: allEmployees } = await supabase.from("employees").insert([...cltEmployees, ...pjEmployees]).select();
+
+      // Criar Benefícios
+      await supabase.from("benefits").insert([
+        { name: "Vale Transporte", benefit_type: "transporte", applies_to: "CLT", default_value: 200, is_mandatory: true },
+        { name: "Vale Refeição", benefit_type: "alimentacao", applies_to: "ambos", default_value: 30, is_mandatory: false },
+        { name: "Vale Alimentação", benefit_type: "alimentacao", applies_to: "ambos", default_value: 400, is_mandatory: false },
+        { name: "Plano de Saúde", benefit_type: "saude", applies_to: "ambos", default_value: 300, is_mandatory: false },
+        { name: "Gympass", benefit_type: "qualidade_vida", applies_to: "ambos", default_value: 80, is_mandatory: false },
+      ]);
+
+      // Criar Treinamentos
+      await supabase.from("trainings").insert([
+        { name: "NR-5 CIPA", training_type: "seguranca", applies_to: "ambos", duration_hours: 20, validity_months: 12 },
+        { name: "Integração", training_type: "obrigatorio", applies_to: "ambos", duration_hours: 4, validity_months: null },
+        { name: "Excel Avançado", training_type: "tecnico", applies_to: "ambos", duration_hours: 16, validity_months: null },
+        { name: "Gestão de Equipes", training_type: "desenvolvimento", applies_to: "ambos", duration_hours: 8, validity_months: null },
+      ]);
+
+      // Criar contratos PJ
+      const pjOnly = allEmployees?.filter(e => e.contract_type === "PJ") || [];
+      for (const emp of pjOnly.slice(0, 10)) {
+        await supabase.from("pj_contracts").insert({
+          employee_id: emp.id,
+          contract_number: `CTR-PJ-${String(Math.floor(Math.random() * 10000)).padStart(4, "0")}`,
+          service_scope: "Prestação de serviços especializados na área",
+          monthly_value: emp.monthly_value || 5000,
+          start_date: emp.contract_start_date || new Date(2023, 0, 1).toISOString().split("T")[0],
+          end_date: emp.contract_end_date_pj || new Date(2024, 11, 31).toISOString().split("T")[0],
+          status: "ativo",
+          auto_renewal: emp.auto_renewal || false,
+        });
+      }
+
+      // Criar períodos de férias para CLT
+      const cltOnly = allEmployees?.filter(e => e.contract_type === "CLT") || [];
+      for (const emp of cltOnly.slice(0, 15)) {
+        const hireDate = new Date(emp.hire_date);
+        await supabase.from("vacations").insert({
+          employee_id: emp.id,
+          acquisition_period_start: new Date(hireDate.getFullYear(), hireDate.getMonth(), hireDate.getDate()).toISOString().split("T")[0],
+          acquisition_period_end: new Date(hireDate.getFullYear() + 1, hireDate.getMonth(), hireDate.getDate() - 1).toISOString().split("T")[0],
+          vacation_days: 30,
+          days_remaining: Math.floor(Math.random() * 30),
+          status: ["aquisitivo", "concessivo", "solicitado"][Math.floor(Math.random() * 3)],
+        });
+      }
+
+      toast({
+        title: "Dados carregados!",
+        description: "50 funcionários, departamentos, cargos e registros foram criados com sucesso.",
+      });
+    } catch (error) {
+      console.error("Erro ao carregar dados:", error);
+      toast({
+        title: "Erro ao carregar dados",
+        description: "Ocorreu um erro ao criar os dados de teste.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingData(false);
+    }
   };
 
   return (
@@ -51,6 +197,10 @@ export default function Settings() {
           <TabsTrigger value="security">
             <Shield className="h-4 w-4 mr-2" />
             Segurança
+          </TabsTrigger>
+          <TabsTrigger value="data">
+            <Database className="h-4 w-4 mr-2" />
+            Dados de Teste
           </TabsTrigger>
         </TabsList>
 
@@ -268,6 +418,52 @@ export default function Settings() {
                   </p>
                 </div>
                 <Switch defaultChecked />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="data" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Dados de Teste</CardTitle>
+              <CardDescription>
+                Carregue dados fictícios para testar o sistema
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="rounded-lg border border-warning bg-warning/10 p-4">
+                <p className="text-sm text-warning-foreground">
+                  ⚠️ Esta ação criará 50+ registros de teste incluindo funcionários CLT e PJ, 
+                  departamentos, cargos, unidades, contratos, férias e treinamentos.
+                </p>
+              </div>
+              
+              <Button 
+                onClick={loadTestData} 
+                disabled={isLoadingData}
+                size="lg"
+                className="w-full"
+              >
+                <Database className="mr-2 h-4 w-4" />
+                {isLoadingData ? "Carregando dados..." : "Carregar Dados de Teste"}
+              </Button>
+
+              <Separator />
+
+              <div className="space-y-2 text-sm text-muted-foreground">
+                <p className="font-semibold">O que será criado:</p>
+                <ul className="list-disc list-inside space-y-1 ml-2">
+                  <li>3 Unidades (Matriz + Filiais)</li>
+                  <li>5 Departamentos</li>
+                  <li>7 Cargos</li>
+                  <li>30 Funcionários CLT</li>
+                  <li>20 Prestadores PJ</li>
+                  <li>5 Tipos de Benefícios</li>
+                  <li>4 Treinamentos</li>
+                  <li>10 Contratos PJ</li>
+                  <li>15 Períodos de Férias</li>
+                </ul>
               </div>
             </CardContent>
           </Card>
