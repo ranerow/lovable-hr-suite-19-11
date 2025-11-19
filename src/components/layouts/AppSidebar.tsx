@@ -9,7 +9,8 @@ import {
   Building,
   Gift,
   Calendar,
-  GraduationCap
+  GraduationCap,
+  Shield
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
@@ -29,6 +30,7 @@ const menuItems = [
   { title: "Funcionários", url: "/employees", icon: Users },
   { title: "Ponto", url: "/timesheets", icon: Clock },
   { title: "Relatórios", url: "/reports", icon: FileText },
+  { title: "Recrutamento", url: "/recruitment", icon: Briefcase },
 ];
 
 const cltModules = [
@@ -45,6 +47,8 @@ const configItems = [
   { title: "Departamentos", url: "/departments", icon: Building },
   { title: "Unidades", url: "/units", icon: Building2 },
   { title: "Cargos", url: "/roles", icon: Briefcase },
+  { title: "Compliance", url: "/compliance", icon: Shield },
+  { title: "Permissões", url: "/permissions", icon: Shield },
   { title: "Configurações", url: "/settings", icon: Settings },
 ];
 

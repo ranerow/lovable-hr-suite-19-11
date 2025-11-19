@@ -53,6 +53,103 @@ export type Database = {
         }
         Relationships: []
       }
+      candidate_documents: {
+        Row: {
+          candidate_id: string
+          document_type: string
+          file_name: string
+          file_url: string
+          id: string
+          upload_date: string | null
+        }
+        Insert: {
+          candidate_id: string
+          document_type: string
+          file_name: string
+          file_url: string
+          id?: string
+          upload_date?: string | null
+        }
+        Update: {
+          candidate_id?: string
+          document_type?: string
+          file_name?: string
+          file_url?: string
+          id?: string
+          upload_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidate_documents_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "candidates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      candidates: {
+        Row: {
+          applied_date: string | null
+          cover_letter: string | null
+          cpf_cnpj: string | null
+          created_at: string | null
+          current_stage: string | null
+          email: string
+          id: string
+          job_opening_id: string
+          name: string
+          notes: string | null
+          overall_score: number | null
+          phone: string | null
+          resume_url: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          applied_date?: string | null
+          cover_letter?: string | null
+          cpf_cnpj?: string | null
+          created_at?: string | null
+          current_stage?: string | null
+          email: string
+          id?: string
+          job_opening_id: string
+          name: string
+          notes?: string | null
+          overall_score?: number | null
+          phone?: string | null
+          resume_url?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          applied_date?: string | null
+          cover_letter?: string | null
+          cpf_cnpj?: string | null
+          created_at?: string | null
+          current_stage?: string | null
+          email?: string
+          id?: string
+          job_opening_id?: string
+          name?: string
+          notes?: string | null
+          overall_score?: number | null
+          phone?: string | null
+          resume_url?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidates_job_opening_id_fkey"
+            columns: ["job_opening_id"]
+            isOneToOne: false
+            referencedRelation: "job_openings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       departments: {
         Row: {
           active: boolean | null
@@ -456,6 +553,109 @@ export type Database = {
           },
           {
             foreignKeyName: "employees_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_openings: {
+        Row: {
+          approved_by_director: string | null
+          approved_by_legal: string | null
+          approved_by_manager: string | null
+          benefits: string[] | null
+          closing_date: string | null
+          contract_duration: string | null
+          contract_type: string
+          created_at: string | null
+          created_by: string | null
+          department_id: string | null
+          description: string | null
+          id: string
+          monthly_value_pj: number | null
+          opening_date: string | null
+          requirements: string | null
+          role_id: string | null
+          salary_range_max: number | null
+          salary_range_min: number | null
+          service_scope: string | null
+          status: string | null
+          title: string
+          unit_id: string | null
+          updated_at: string | null
+          workload: number | null
+        }
+        Insert: {
+          approved_by_director?: string | null
+          approved_by_legal?: string | null
+          approved_by_manager?: string | null
+          benefits?: string[] | null
+          closing_date?: string | null
+          contract_duration?: string | null
+          contract_type: string
+          created_at?: string | null
+          created_by?: string | null
+          department_id?: string | null
+          description?: string | null
+          id?: string
+          monthly_value_pj?: number | null
+          opening_date?: string | null
+          requirements?: string | null
+          role_id?: string | null
+          salary_range_max?: number | null
+          salary_range_min?: number | null
+          service_scope?: string | null
+          status?: string | null
+          title: string
+          unit_id?: string | null
+          updated_at?: string | null
+          workload?: number | null
+        }
+        Update: {
+          approved_by_director?: string | null
+          approved_by_legal?: string | null
+          approved_by_manager?: string | null
+          benefits?: string[] | null
+          closing_date?: string | null
+          contract_duration?: string | null
+          contract_type?: string
+          created_at?: string | null
+          created_by?: string | null
+          department_id?: string | null
+          description?: string | null
+          id?: string
+          monthly_value_pj?: number | null
+          opening_date?: string | null
+          requirements?: string | null
+          role_id?: string | null
+          salary_range_max?: number | null
+          salary_range_min?: number | null
+          service_scope?: string | null
+          status?: string | null
+          title?: string
+          unit_id?: string | null
+          updated_at?: string | null
+          workload?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_openings_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_openings_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_openings_unit_id_fkey"
             columns: ["unit_id"]
             isOneToOne: false
             referencedRelation: "units"

@@ -15,6 +15,10 @@ import Benefits from "./pages/Benefits";
 import Vacations from "./pages/Vacations";
 import Trainings from "./pages/Trainings";
 import PJContracts from "./pages/PJContracts";
+import Recruitment from "./pages/Recruitment";
+import Compliance from "./pages/Compliance";
+import Reports from "./pages/Reports";
+import Permissions from "./pages/Permissions";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import { AppLayout } from "./components/layouts/AppLayout";
@@ -41,6 +45,10 @@ const App = () => (
             <Route path="/vacations" element={<AppLayout><Vacations /></AppLayout>} />
             <Route path="/trainings" element={<AppLayout><Trainings /></AppLayout>} />
             <Route path="/pj-contracts" element={<AppLayout><PJContracts /></AppLayout>} />
+            <Route path="/recruitment" element={<AppLayout><Recruitment /></AppLayout>} />
+            <Route path="/compliance" element={<AppLayout><Compliance /></AppLayout>} />
+            <Route path="/reports" element={<AppLayout><Reports /></AppLayout>} />
+            <Route path="/permissions" element={<AppLayout><Permissions /></AppLayout>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
