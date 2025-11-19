@@ -162,6 +162,7 @@ export default function OnboardingPortal() {
           municipal_registration: formData.municipal_registration,
           legal_representative: formData.legal_representative,
           pj_type: formData.pj_type,
+          status: "Aguardando Ativação", // Status para revisão do RH
         })
         .eq("id", invitation.employee_id);
 

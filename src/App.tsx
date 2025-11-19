@@ -28,6 +28,7 @@ import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import OnboardingPortal from "./pages/OnboardingPortal";
 import OnboardingInvitations from "./pages/OnboardingInvitations";
+import EmployeeReview from "./pages/EmployeeReview";
 import { AppLayout } from "./components/layouts/AppLayout";
 
 const queryClient = new QueryClient();
@@ -46,6 +47,7 @@ const App = () => (
             <Route path="/employees" element={<ProtectedRoute><AppLayout><Employees /></AppLayout></ProtectedRoute>} />
             <Route path="/employees/new" element={<ProtectedRoute><AppLayout><EmployeeForm /></AppLayout></ProtectedRoute>} />
             <Route path="/employees/:id" element={<ProtectedRoute><AppLayout><EmployeeDetail /></AppLayout></ProtectedRoute>} />
+            <Route path="/employees/:id/review" element={<ProtectedRoute><AppLayout><EmployeeReview /></AppLayout></ProtectedRoute>} />
             <Route path="/employees/:id/edit" element={<ProtectedRoute><AppLayout><EmployeeForm /></AppLayout></ProtectedRoute>} />
             <Route path="/departments" element={<ProtectedRoute><AppLayout><Departments /></AppLayout></ProtectedRoute>} />
             <Route path="/roles" element={<ProtectedRoute><AppLayout><Roles /></AppLayout></ProtectedRoute>} />
