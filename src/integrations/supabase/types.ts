@@ -91,73 +91,130 @@ export type Database = {
       employees: {
         Row: {
           address: string | null
+          auto_renewal: boolean | null
           birth_date: string | null
           city: string | null
+          cnpj: string | null
+          company_name: string | null
+          contract_end_date: string | null
+          contract_end_date_pj: string | null
+          contract_start_date: string | null
           contract_type: string
           cpf: string
           created_at: string | null
+          ctps_number: string | null
+          ctps_series: string | null
+          ctps_state: string | null
           department_id: string | null
           email: string
           full_name: string
           hire_date: string
           id: string
+          legal_representative: string | null
+          monthly_value: number | null
+          municipal_registration: string | null
           phone: string | null
           photo_url: string | null
+          pis_pasep: string | null
+          pj_type: string | null
           role_id: string | null
           salary: number | null
+          service_scope: string | null
+          shift_type: string | null
           state: string | null
           status: string
+          technical_responsibility: string | null
+          thirteenth_salary_provision: number | null
           unit_id: string | null
           updated_at: string | null
           user_id: string | null
+          vacation_provision: number | null
           workload: number
           zip_code: string | null
         }
         Insert: {
           address?: string | null
+          auto_renewal?: boolean | null
           birth_date?: string | null
           city?: string | null
+          cnpj?: string | null
+          company_name?: string | null
+          contract_end_date?: string | null
+          contract_end_date_pj?: string | null
+          contract_start_date?: string | null
           contract_type: string
           cpf: string
           created_at?: string | null
+          ctps_number?: string | null
+          ctps_series?: string | null
+          ctps_state?: string | null
           department_id?: string | null
           email: string
           full_name: string
           hire_date: string
           id?: string
+          legal_representative?: string | null
+          monthly_value?: number | null
+          municipal_registration?: string | null
           phone?: string | null
           photo_url?: string | null
+          pis_pasep?: string | null
+          pj_type?: string | null
           role_id?: string | null
           salary?: number | null
+          service_scope?: string | null
+          shift_type?: string | null
           state?: string | null
           status?: string
+          technical_responsibility?: string | null
+          thirteenth_salary_provision?: number | null
           unit_id?: string | null
           updated_at?: string | null
           user_id?: string | null
+          vacation_provision?: number | null
           workload?: number
           zip_code?: string | null
         }
         Update: {
           address?: string | null
+          auto_renewal?: boolean | null
           birth_date?: string | null
           city?: string | null
+          cnpj?: string | null
+          company_name?: string | null
+          contract_end_date?: string | null
+          contract_end_date_pj?: string | null
+          contract_start_date?: string | null
           contract_type?: string
           cpf?: string
           created_at?: string | null
+          ctps_number?: string | null
+          ctps_series?: string | null
+          ctps_state?: string | null
           department_id?: string | null
           email?: string
           full_name?: string
           hire_date?: string
           id?: string
+          legal_representative?: string | null
+          monthly_value?: number | null
+          municipal_registration?: string | null
           phone?: string | null
           photo_url?: string | null
+          pis_pasep?: string | null
+          pj_type?: string | null
           role_id?: string | null
           salary?: number | null
+          service_scope?: string | null
+          shift_type?: string | null
           state?: string | null
           status?: string
+          technical_responsibility?: string | null
+          thirteenth_salary_provision?: number | null
           unit_id?: string | null
           updated_at?: string | null
           user_id?: string | null
+          vacation_provision?: number | null
           workload?: number
           zip_code?: string | null
         }
@@ -310,15 +367,73 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          department_id: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          unit_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          department_id?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          unit_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          department_id?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          unit_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_roles_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      can_access_unit: {
+        Args: { _unit_id: string; _user_id: string }
+        Returns: boolean
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role:
+        | "diretoria"
+        | "rh_matriz"
+        | "rh_filial"
+        | "gestor"
+        | "colaborador_clt"
+        | "prestador_pj"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -445,6 +560,15 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: [
+        "diretoria",
+        "rh_matriz",
+        "rh_filial",
+        "gestor",
+        "colaborador_clt",
+        "prestador_pj",
+      ],
+    },
   },
 } as const
