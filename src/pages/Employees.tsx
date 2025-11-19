@@ -48,6 +48,28 @@ export default function Employees() {
     },
   });
 
+  // Buscar funcionários recém-onboardados (últimos 7 dias)
+  const { data: recentOnboarding } = useQuery({
+    queryKey: ["recent-onboarding"],
+    queryFn: async () => {
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      
+      const { data, error } = await supabase
+        .from("onboarding_invitations")
+        .select("employee_id, completed_at")
+        .eq("status", "concluido")
+        .gte("completed_at", sevenDaysAgo.toISOString());
+
+      if (error) throw error;
+      return data?.map(inv => inv.employee_id) || [];
+    },
+  });
+
+  const isRecentlyOnboarded = (employeeId: string) => {
+    return recentOnboarding?.includes(employeeId) || false;
+  };
+
   const filteredEmployees = employees?.filter((emp) => {
     const matchesSearch = emp.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       emp.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -151,7 +173,16 @@ export default function Employees() {
                       className="cursor-pointer hover:bg-muted/50"
                       onClick={() => navigate(`/employees/${employee.id}`)}
                     >
-                      <TableCell className="font-medium">{employee.full_name}</TableCell>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          {employee.full_name}
+                          {isRecentlyOnboarded(employee.id) && (
+                            <Badge variant="default" className="text-xs">
+                              Novo
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell className="text-muted-foreground">{employee.email}</TableCell>
                       <TableCell>{employee.role?.name || "-"}</TableCell>
                       <TableCell>
