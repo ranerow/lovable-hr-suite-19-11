@@ -10,7 +10,8 @@ import {
   Gift,
   Calendar,
   GraduationCap,
-  Shield
+  Shield,
+  DollarSign
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
@@ -28,6 +29,7 @@ import {
 const menuItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Funcionários", url: "/employees", icon: Users },
+  { title: "Financeiro RH", url: "/finance-rh", icon: DollarSign },
   { title: "Ponto", url: "/timesheets", icon: Clock },
   { title: "Relatórios", url: "/reports", icon: FileText },
   { title: "Recrutamento", url: "/recruitment", icon: Briefcase },
