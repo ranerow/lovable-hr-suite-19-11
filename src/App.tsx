@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Employees from "./pages/Employees";
+import EmployeeDetail from "./pages/EmployeeDetail";
 import Timesheets from "./pages/Timesheets";
 import Units from "./pages/Units";
 import Roles from "./pages/Roles";
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<AppLayout><Dashboard /></AppLayout>} />
           <Route path="/employees" element={<AppLayout><Employees /></AppLayout>} />
+          <Route path="/employees/:id" element={<AppLayout><EmployeeDetail /></AppLayout>} />
           <Route path="/timesheets" element={<AppLayout><Timesheets /></AppLayout>} />
           <Route path="/units" element={<AppLayout><Units /></AppLayout>} />
           <Route path="/roles" element={<AppLayout><Roles /></AppLayout>} />
