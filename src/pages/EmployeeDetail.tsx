@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Mail, Phone, MapPin, Calendar, Briefcase, FileText, Clock } from "lucide-react";
@@ -19,6 +19,8 @@ import {
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
+import DocumentUpload from "@/components/DocumentUpload";
+import DocumentList from "@/components/DocumentList";
 
 export default function EmployeeDetail() {
   const { id } = useParams();
@@ -365,9 +367,101 @@ export default function EmployeeDetail() {
               )}
             </CardContent>
           </Card>
-        </TabsContent>
+            </TabsContent>
 
-        <TabsContent value="timesheet" className="space-y-4">
+            <TabsContent value="documents" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Documentos Pessoais</CardTitle>
+                  <CardDescription>
+                    Gerencie os documentos do colaborador
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <DocumentUpload
+                    employeeId={id!}
+                    bucketName="employee-documents"
+                  />
+                  <Separator />
+                  <DocumentList
+                    employeeId={id!}
+                    bucketName="employee-documents"
+                    title="Documentos Cadastrados"
+                  />
+                </CardContent>
+              </Card>
+
+              {employee.contract_type === "CLT" && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Contratos CLT</CardTitle>
+                    <CardDescription>
+                      Documentos contratuais do vínculo CLT
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <DocumentUpload
+                      employeeId={id!}
+                      bucketName="contracts"
+                    />
+                    <Separator />
+                    <DocumentList
+                      employeeId={id!}
+                      bucketName="contracts"
+                      title="Contratos Cadastrados"
+                    />
+                  </CardContent>
+                </Card>
+              )}
+
+              {employee.contract_type === "PJ" && (
+                <>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Certidões PJ</CardTitle>
+                      <CardDescription>
+                        CND Federal, FGTS, Municipal, CNDT
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <DocumentUpload
+                        employeeId={id!}
+                        bucketName="pj-certifications"
+                      />
+                      <Separator />
+                      <DocumentList
+                        employeeId={id!}
+                        bucketName="pj-certifications"
+                        title="Certidões Cadastradas"
+                      />
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Notas Fiscais</CardTitle>
+                      <CardDescription>
+                        Notas fiscais mensais de prestação de serviços
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <DocumentUpload
+                        employeeId={id!}
+                        bucketName="pj-invoices"
+                      />
+                      <Separator />
+                      <DocumentList
+                        employeeId={id!}
+                        bucketName="pj-invoices"
+                        title="Notas Fiscais Cadastradas"
+                      />
+                    </CardContent>
+                  </Card>
+                </>
+              )}
+            </TabsContent>
+
+            <TabsContent value="timesheet" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Histórico de Ponto - Últimos 30 dias</CardTitle>
