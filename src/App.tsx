@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Employees from "./pages/Employees";
+import EmployeeForm from "./pages/EmployeeForm";
 import EmployeeDetail from "./pages/EmployeeDetail";
 import Roles from "./pages/Roles";
 import Units from "./pages/Units";
@@ -38,8 +39,10 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/dashboard" element={<AppLayout><Dashboard /></AppLayout>} />
-            <Route path="/employees" element={<AppLayout><Employees /></AppLayout>} />
-            <Route path="/employees/:id" element={<AppLayout><EmployeeDetail /></AppLayout>} />
+        <Route path="/employees" element={<AppLayout><Employees /></AppLayout>} />
+        <Route path="/employees/new" element={<AppLayout><EmployeeForm /></AppLayout>} />
+        <Route path="/employees/:id" element={<AppLayout><EmployeeDetail /></AppLayout>} />
+        <Route path="/employees/:id/edit" element={<AppLayout><EmployeeForm /></AppLayout>} />
             <Route path="/departments" element={<AppLayout><Departments /></AppLayout>} />
             <Route path="/roles" element={<AppLayout><Roles /></AppLayout>} />
             <Route path="/units" element={<AppLayout><Units /></AppLayout>} />

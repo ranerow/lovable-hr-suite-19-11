@@ -1,9 +1,14 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 import {
   Table,
   TableBody,
@@ -18,7 +23,16 @@ import { ptBR } from "date-fns/locale";
 import { Clock } from "lucide-react";
 
 export default function Timesheets() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [open, setOpen] = useState(false);
+  const [employeeId, setEmployeeId] = useState("");
+  const [checkIn, setCheckIn] = useState("");
+  const [checkOut, setCheckOut] = useState("");
+  const [lunchStart, setLunchStart] = useState("");
+  const [lunchEnd, setLunchEnd] = useState("");
+  const [status, setStatus] = useState("Presente");
 
   const { data: timesheets, isLoading } = useQuery({
     queryKey: ["timesheets", selectedDate],
@@ -35,6 +49,54 @@ export default function Timesheets() {
 
       if (error) throw error;
       return data;
+    },
+  });
+
+  const { data: employees } = useQuery({
+    queryKey: ["employees-clt"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("employees")
+        .select("id, full_name")
+        .eq("contract_type", "CLT")
+        .eq("status", "Ativo")
+        .order("full_name");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const createMutation = useMutation({
+    mutationFn: async () => {
+      const dateStr = format(selectedDate, "yyyy-MM-dd");
+      const { error } = await supabase.from("timesheets").insert([{
+        employee_id: employeeId,
+        date: dateStr,
+        check_in: checkIn,
+        check_out: checkOut,
+        lunch_start: lunchStart,
+        lunch_end: lunchEnd,
+        status: status,
+      }]);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["timesheets"] });
+      toast({ title: "Ponto registrado com sucesso" });
+      setOpen(false);
+      setEmployeeId("");
+      setCheckIn("");
+      setCheckOut("");
+      setLunchStart("");
+      setLunchEnd("");
+      setStatus("Presente");
+    },
+    onError: (error) => {
+      toast({
+        title: "Erro ao registrar ponto",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 
@@ -80,10 +142,99 @@ export default function Timesheets() {
               <CardTitle>
                 Registros de {format(selectedDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
               </CardTitle>
-              <Button className="gap-2">
-                <Clock className="h-4 w-4" />
-                Registrar Ponto
-              </Button>
+              <Dialog open={open} onOpenChange={setOpen}>
+                <DialogTrigger asChild>
+                  <Button className="gap-2">
+                    <Clock className="h-4 w-4" />
+                    Registrar Ponto
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Registrar Ponto</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Funcionário *</Label>
+                      <Select value={employeeId} onValueChange={setEmployeeId}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {employees?.map((emp) => (
+                            <SelectItem key={emp.id} value={emp.id}>
+                              {emp.full_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label>Entrada *</Label>
+                        <Input
+                          type="time"
+                          value={checkIn}
+                          onChange={(e) => setCheckIn(e.target.value)}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Saída</Label>
+                        <Input
+                          type="time"
+                          value={checkOut}
+                          onChange={(e) => setCheckOut(e.target.value)}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Início Almoço</Label>
+                        <Input
+                          type="time"
+                          value={lunchStart}
+                          onChange={(e) => setLunchStart(e.target.value)}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Fim Almoço</Label>
+                        <Input
+                          type="time"
+                          value={lunchEnd}
+                          onChange={(e) => setLunchEnd(e.target.value)}
+                        />
+                      </div>
+
+                      <div className="space-y-2 md:col-span-2">
+                        <Label>Status</Label>
+                        <Select value={status} onValueChange={setStatus}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Presente">Presente</SelectItem>
+                            <SelectItem value="Falta">Falta</SelectItem>
+                            <SelectItem value="Atestado">Atestado</SelectItem>
+                            <SelectItem value="Férias">Férias</SelectItem>
+                            <SelectItem value="Feriado">Feriado</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" onClick={() => setOpen(false)}>
+                        Cancelar
+                      </Button>
+                      <Button onClick={() => createMutation.mutate()} disabled={createMutation.isPending}>
+                        {createMutation.isPending ? "Salvando..." : "Registrar"}
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
           </CardHeader>
           <CardContent>
