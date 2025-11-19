@@ -25,40 +25,96 @@ export default function Dashboard() {
     },
   });
 
+  const { data: cltCount } = useQuery({
+    queryKey: ["clt-count"],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("employees")
+        .select("*", { count: "exact", head: true })
+        .eq("contract_type", "CLT")
+        .eq("status", "Ativo");
+      return count || 0;
+    },
+  });
+
+  const { data: pjCount } = useQuery({
+    queryKey: ["pj-count"],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("employees")
+        .select("*", { count: "exact", head: true })
+        .eq("contract_type", "PJ")
+        .eq("status", "Ativo");
+      return count || 0;
+    },
+  });
+
+  const { data: expiringContracts } = useQuery({
+    queryKey: ["expiring-contracts"],
+    queryFn: async () => {
+      const thirtyDaysFromNow = new Date();
+      thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+      
+      const { count } = await supabase
+        .from("pj_contracts")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "ativo")
+        .lte("end_date", thirtyDaysFromNow.toISOString().split('T')[0]);
+      return count || 0;
+    },
+  });
+
+  const { data: expiringVacations } = useQuery({
+    queryKey: ["expiring-vacations"],
+    queryFn: async () => {
+      const today = new Date().toISOString().split('T')[0];
+      const { count } = await supabase
+        .from("vacations")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "aquisitivo")
+        .lte("acquisition_period_end", today);
+      return count || 0;
+    },
+  });
+
   const stats = [
     {
       title: "Total de Funcionários",
       value: employees || 0,
       icon: Users,
-      change: "+12%",
-      positive: true,
+      description: "Todos os colaboradores",
     },
     {
       title: "Funcionários Ativos",
       value: activeEmployees || 0,
       icon: Briefcase,
-      change: "+5%",
-      positive: true,
+      description: "Em atividade",
     },
     {
-      title: "Custo Mensal Folha",
-      value: "R$ 0,00",
-      icon: DollarSign,
-      change: "+3%",
-      positive: false,
+      title: "CLT Ativos",
+      value: cltCount || 0,
+      icon: Users,
+      description: "Contrato CLT",
     },
     {
-      title: "Horas Extras (mês)",
-      value: "0h",
-      icon: Clock,
-      change: "-8%",
-      positive: true,
+      title: "PJ Ativos",
+      value: pjCount || 0,
+      icon: Briefcase,
+      description: "Prestadores de serviço",
     },
   ];
 
   const alerts = [
-    { type: "warning", message: "3 contratos vencem em 30 dias", icon: AlertCircle },
-    { type: "info", message: "5 funcionários com férias vencidas", icon: Calendar },
+    { 
+      type: "warning", 
+      message: `${expiringContracts || 0} contratos PJ vencem em 30 dias`, 
+      icon: AlertCircle 
+    },
+    { 
+      type: "info", 
+      message: `${expiringVacations || 0} períodos de férias vencidos`, 
+      icon: Calendar 
+    },
   ];
 
   return (
@@ -78,8 +134,8 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stat.value}</div>
-              <p className={`text-xs ${stat.positive ? 'text-success' : 'text-destructive'}`}>
-                {stat.change} desde o mês passado
+              <p className="text-xs text-muted-foreground">
+                {stat.description}
               </p>
             </CardContent>
           </Card>
