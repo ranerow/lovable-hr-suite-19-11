@@ -12,7 +12,8 @@ import {
   GraduationCap,
   Shield,
   DollarSign,
-  Upload
+  Upload,
+  UserPlus
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
@@ -30,6 +31,7 @@ import {
 const menuItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Funcionários", url: "/employees", icon: Users },
+  { title: "Convites Onboarding", url: "/onboarding-invitations", icon: UserPlus },
   { title: "Documentos", url: "/documents", icon: Upload },
   { title: "Financeiro RH", url: "/finance-rh", icon: DollarSign },
   { title: "Ponto", url: "/timesheets", icon: Clock },
