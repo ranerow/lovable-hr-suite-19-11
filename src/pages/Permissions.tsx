@@ -1,9 +1,18 @@
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Shield } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Shield, Plus } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { toast } from "sonner";
 
 const roleLabels = {
   diretoria: "Diretoria",
@@ -23,7 +32,60 @@ const roleColors = {
   prestador_pj: "secondary",
 } as const;
 
+const formSchema = z.object({
+  user_id: z.string().min(1, "Selecione um usuário"),
+  role: z.enum(["diretoria", "rh_matriz", "rh_filial", "gestor", "colaborador_clt", "prestador_pj"]),
+  unit_id: z.string().optional(),
+  department_id: z.string().optional(),
+});
+
 export default function Permissions() {
+  const [open, setOpen] = useState(false);
+  const queryClient = useQueryClient();
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+  });
+
+  const { data: employees } = useQuery({
+    queryKey: ["employees_for_roles"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("employees")
+        .select("id, full_name, email, user_id")
+        .eq("status", "Ativo")
+        .order("full_name");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: units } = useQuery({
+    queryKey: ["units_active"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("units")
+        .select("id, name")
+        .eq("active", true)
+        .order("name");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: departments } = useQuery({
+    queryKey: ["departments_active"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("departments")
+        .select("id, name")
+        .eq("active", true)
+        .order("name");
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const { data: userRoles, isLoading } = useQuery({
     queryKey: ["user_roles_admin"],
     queryFn: async () => {
@@ -39,6 +101,32 @@ export default function Permissions() {
       return data;
     },
   });
+
+  const createRole = useMutation({
+    mutationFn: async (values: z.infer<typeof formSchema>) => {
+      const { data, error } = await supabase
+        .from("user_roles")
+        .insert([values as any])
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user_roles"] });
+      toast.success("Permissão atribuída com sucesso!");
+      setOpen(false);
+      form.reset();
+    },
+    onError: (error) => {
+      toast.error("Erro ao atribuir permissão");
+      console.error(error);
+    },
+  });
+
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
+    createRole.mutate(values);
+  };
 
   return (
     <div className="space-y-6">
