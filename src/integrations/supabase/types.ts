@@ -663,6 +663,68 @@ export type Database = {
           },
         ]
       }
+      onboarding_invitations: {
+        Row: {
+          completed_at: string | null
+          completion_percentage: number | null
+          contract_type: string
+          created_at: string | null
+          created_by: string | null
+          email: string
+          employee_id: string | null
+          expires_at: string
+          full_name: string
+          id: string
+          ip_address: string | null
+          status: string
+          token: string
+          updated_at: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          completion_percentage?: number | null
+          contract_type: string
+          created_at?: string | null
+          created_by?: string | null
+          email: string
+          employee_id?: string | null
+          expires_at: string
+          full_name: string
+          id?: string
+          ip_address?: string | null
+          status?: string
+          token: string
+          updated_at?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          completion_percentage?: number | null
+          contract_type?: string
+          created_at?: string | null
+          created_by?: string | null
+          email?: string
+          employee_id?: string | null
+          expires_at?: string
+          full_name?: string
+          id?: string
+          ip_address?: string | null
+          status?: string
+          token?: string
+          updated_at?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_invitations_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pj_certifications: {
         Row: {
           alert_days_before: number | null

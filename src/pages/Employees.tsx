@@ -15,6 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Search, Plus, Filter } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { OnboardingInvitationDialog } from "@/components/OnboardingInvitationDialog";
 import {
   Select,
   SelectContent,
@@ -163,7 +164,15 @@ export default function Employees() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
+                        <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                          <OnboardingInvitationDialog
+                            employee={{
+                              id: employee.id,
+                              full_name: employee.full_name,
+                              email: employee.email,
+                              contract_type: employee.contract_type,
+                            }}
+                          />
                           <Button 
                             variant="ghost" 
                             size="sm"
