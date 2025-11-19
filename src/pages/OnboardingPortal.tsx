@@ -175,6 +175,15 @@ export default function OnboardingPortal() {
         })
         .eq("id", invitation.id);
 
+      // Notificar RH
+      await supabase.functions.invoke("notify-rh-onboarding-complete", {
+        body: {
+          employeeName: formData.full_name,
+          employeeEmail: formData.email,
+          invitationId: invitation.id,
+        },
+      });
+
       // Limpar localStorage
       localStorage.removeItem(`onboarding_${token}`);
 
