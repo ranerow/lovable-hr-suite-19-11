@@ -96,9 +96,15 @@ export default function OnboardingPortal() {
     }
   };
 
-  const updateProgress = async (percentage: number) => {
+  const updateProgress = async (step: number) => {
     if (!invitation) return;
-
+    
+    // Cálculo correto: step atual / total de steps * 100
+    // Step 1: 17%, Step 2: 33%, Step 3: 50%, Step 4: 67%, Step 5: 83%, Step 6: 100%
+    const percentage = Math.round((step / 6) * 100);
+    
+    console.log(`📊 Atualizando progresso: Step ${step} = ${percentage}%`);
+    
     await supabase
       .from("onboarding_invitations")
       .update({ completion_percentage: percentage })
@@ -107,8 +113,10 @@ export default function OnboardingPortal() {
 
   const handleNextStep = (stepData: any) => {
     setFormData({ ...formData, ...stepData });
-    setCurrentStep(currentStep + 1);
-    updateProgress(Math.round((currentStep / 6) * 100));
+    const nextStep = currentStep + 1;
+    console.log(`📝 Avançando para step ${nextStep}`);
+    setCurrentStep(nextStep);
+    updateProgress(nextStep); // Usar nextStep para cálculo correto
   };
 
   const handleBackStep = () => {
@@ -116,9 +124,11 @@ export default function OnboardingPortal() {
   };
 
   const handleDocumentsNext = (docs: any[]) => {
+    console.log(`📤 Enviando ${docs.length} documentos`);
     setDocuments(docs);
-    setCurrentStep(currentStep + 1);
-    updateProgress(Math.round((currentStep / 6) * 100));
+    const nextStep = currentStep + 1;
+    setCurrentStep(nextStep);
+    updateProgress(nextStep); // Garantir que chegue a 83%
   };
 
   const handleFinalSubmit = async () => {
@@ -126,6 +136,11 @@ export default function OnboardingPortal() {
 
     setIsSubmitting(true);
     try {
+      console.log("✅ Finalizando onboarding para employee_id:", invitation.employee_id);
+      
+      // Atualizar progresso para 100% PRIMEIRO
+      await updateProgress(6);
+      
       // Atualizar dados do funcionário
       const { error: employeeError } = await supabase
         .from("employees")
