@@ -5,7 +5,11 @@ import {
   FileText,
   Settings,
   Building2,
-  Briefcase
+  Briefcase,
+  Building,
+  Gift,
+  Calendar,
+  GraduationCap
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
@@ -27,7 +31,18 @@ const menuItems = [
   { title: "Relatórios", url: "/reports", icon: FileText },
 ];
 
+const cltModules = [
+  { title: "Benefícios", url: "/benefits", icon: Gift },
+  { title: "Férias", url: "/vacations", icon: Calendar },
+  { title: "Treinamentos", url: "/trainings", icon: GraduationCap },
+];
+
+const pjModules = [
+  { title: "Contratos PJ", url: "/pj-contracts", icon: FileText },
+];
+
 const configItems = [
+  { title: "Departamentos", url: "/departments", icon: Building },
   { title: "Unidades", url: "/units", icon: Building2 },
   { title: "Cargos", url: "/roles", icon: Briefcase },
   { title: "Configurações", url: "/settings", icon: Settings },
@@ -50,6 +65,50 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink 
+                      to={item.url} 
+                      className="flex items-center gap-3"
+                      activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                    >
+                      <item.icon className="h-5 w-5" />
+                      <span>{item.title}</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Módulos CLT</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {cltModules.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink 
+                      to={item.url} 
+                      className="flex items-center gap-3"
+                      activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                    >
+                      <item.icon className="h-5 w-5" />
+                      <span>{item.title}</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Módulos PJ</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {pjModules.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink 
