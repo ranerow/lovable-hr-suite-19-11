@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import DocumentList from "@/components/DocumentList";
+import StatusHistory from "@/components/StatusHistory";
 import { CheckCircle, XCircle, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
@@ -229,6 +230,9 @@ export default function EmployeeReview() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Histórico de Status */}
+      <StatusHistory employeeId={id!} />
 
       {/* Documentos */}
       <Card>
