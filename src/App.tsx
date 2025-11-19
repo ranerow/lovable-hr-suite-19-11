@@ -34,11 +34,11 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-        <BrowserRouter>
-          <Routes>
+    <BrowserRouter>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/onboarding/:token" element={<OnboardingPortal />} />
@@ -65,8 +65,8 @@ const App = () => (
             <Route path="/settings" element={<ProtectedRoute><AppLayout><Settings /></AppLayout></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </BrowserRouter>
-    </TooltipProvider>
+        </TooltipProvider>
+      </BrowserRouter>
   </QueryClientProvider>
 );
 
