@@ -20,6 +20,7 @@ import Compliance from "./pages/Compliance";
 import Reports from "./pages/Reports";
 import Permissions from "./pages/Permissions";
 import FinanceRH from "./pages/FinanceRH";
+import Documents from "./pages/Documents";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import { AppLayout } from "./components/layouts/AppLayout";
@@ -51,6 +52,7 @@ const App = () => (
             <Route path="/reports" element={<AppLayout><Reports /></AppLayout>} />
             <Route path="/permissions" element={<AppLayout><Permissions /></AppLayout>} />
             <Route path="/finance-rh" element={<AppLayout><FinanceRH /></AppLayout>} />
+            <Route path="/documents" element={<AppLayout><Documents /></AppLayout>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
