@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      benefits: {
+        Row: {
+          active: boolean | null
+          applies_to: string
+          benefit_type: string
+          created_at: string | null
+          default_value: number | null
+          description: string | null
+          id: string
+          is_mandatory: boolean | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          applies_to: string
+          benefit_type: string
+          created_at?: string | null
+          default_value?: number | null
+          description?: string | null
+          id?: string
+          is_mandatory?: boolean | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          applies_to?: string
+          benefit_type?: string
+          created_at?: string | null
+          default_value?: number | null
+          description?: string | null
+          id?: string
+          is_mandatory?: boolean | null
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       departments: {
         Row: {
           active: boolean | null
@@ -43,6 +82,128 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      disciplinary_actions: {
+        Row: {
+          acknowledgment_date: string | null
+          action_date: string
+          action_type: string
+          applied_by: string | null
+          created_at: string | null
+          description: string | null
+          document_url: string | null
+          employee_acknowledgment: boolean | null
+          employee_id: string
+          id: string
+          notes: string | null
+          reason: string
+          severity: string | null
+          suspension_days: number | null
+          updated_at: string | null
+          witness_1: string | null
+          witness_2: string | null
+        }
+        Insert: {
+          acknowledgment_date?: string | null
+          action_date: string
+          action_type: string
+          applied_by?: string | null
+          created_at?: string | null
+          description?: string | null
+          document_url?: string | null
+          employee_acknowledgment?: boolean | null
+          employee_id: string
+          id?: string
+          notes?: string | null
+          reason: string
+          severity?: string | null
+          suspension_days?: number | null
+          updated_at?: string | null
+          witness_1?: string | null
+          witness_2?: string | null
+        }
+        Update: {
+          acknowledgment_date?: string | null
+          action_date?: string
+          action_type?: string
+          applied_by?: string | null
+          created_at?: string | null
+          description?: string | null
+          document_url?: string | null
+          employee_acknowledgment?: boolean | null
+          employee_id?: string
+          id?: string
+          notes?: string | null
+          reason?: string
+          severity?: string | null
+          suspension_days?: number | null
+          updated_at?: string | null
+          witness_1?: string | null
+          witness_2?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "disciplinary_actions_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employee_benefits: {
+        Row: {
+          active: boolean | null
+          benefit_id: string
+          created_at: string | null
+          discount_from_payroll: boolean | null
+          employee_id: string
+          end_date: string | null
+          id: string
+          monthly_value: number | null
+          start_date: string
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          benefit_id: string
+          created_at?: string | null
+          discount_from_payroll?: boolean | null
+          employee_id: string
+          end_date?: string | null
+          id?: string
+          monthly_value?: number | null
+          start_date: string
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          benefit_id?: string
+          created_at?: string | null
+          discount_from_payroll?: boolean | null
+          employee_id?: string
+          end_date?: string | null
+          id?: string
+          monthly_value?: number | null
+          start_date?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_benefits_benefit_id_fkey"
+            columns: ["benefit_id"]
+            isOneToOne: false
+            referencedRelation: "benefits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_benefits_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       employee_documents: {
         Row: {
@@ -84,6 +245,66 @@ export type Database = {
             columns: ["employee_id"]
             isOneToOne: false
             referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employee_trainings: {
+        Row: {
+          attendance_status: string | null
+          certificate_url: string | null
+          completion_date: string | null
+          created_at: string | null
+          employee_id: string
+          expiry_date: string | null
+          id: string
+          notes: string | null
+          scheduled_date: string | null
+          score: number | null
+          training_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          attendance_status?: string | null
+          certificate_url?: string | null
+          completion_date?: string | null
+          created_at?: string | null
+          employee_id: string
+          expiry_date?: string | null
+          id?: string
+          notes?: string | null
+          scheduled_date?: string | null
+          score?: number | null
+          training_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          attendance_status?: string | null
+          certificate_url?: string | null
+          completion_date?: string | null
+          created_at?: string | null
+          employee_id?: string
+          expiry_date?: string | null
+          id?: string
+          notes?: string | null
+          scheduled_date?: string | null
+          score?: number | null
+          training_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_trainings_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_trainings_training_id_fkey"
+            columns: ["training_id"]
+            isOneToOne: false
+            referencedRelation: "trainings"
             referencedColumns: ["id"]
           },
         ]
@@ -242,6 +463,228 @@ export type Database = {
           },
         ]
       }
+      pj_certifications: {
+        Row: {
+          alert_days_before: number | null
+          certification_type: string
+          created_at: string | null
+          employee_id: string
+          expiry_date: string
+          file_url: string
+          id: string
+          issue_date: string
+          notes: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          alert_days_before?: number | null
+          certification_type: string
+          created_at?: string | null
+          employee_id: string
+          expiry_date: string
+          file_url: string
+          id?: string
+          issue_date: string
+          notes?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          alert_days_before?: number | null
+          certification_type?: string
+          created_at?: string | null
+          employee_id?: string
+          expiry_date?: string
+          file_url?: string
+          id?: string
+          issue_date?: string
+          notes?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pj_certifications_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pj_contract_renewals: {
+        Row: {
+          adjustment_percentage: number | null
+          contract_id: string
+          id: string
+          new_end_date: string
+          new_value: number | null
+          notes: string | null
+          previous_end_date: string
+          previous_value: number | null
+          renewal_date: string | null
+        }
+        Insert: {
+          adjustment_percentage?: number | null
+          contract_id: string
+          id?: string
+          new_end_date: string
+          new_value?: number | null
+          notes?: string | null
+          previous_end_date: string
+          previous_value?: number | null
+          renewal_date?: string | null
+        }
+        Update: {
+          adjustment_percentage?: number | null
+          contract_id?: string
+          id?: string
+          new_end_date?: string
+          new_value?: number | null
+          notes?: string | null
+          previous_end_date?: string
+          previous_value?: number | null
+          renewal_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pj_contract_renewals_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "pj_contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pj_contracts: {
+        Row: {
+          auto_renewal: boolean | null
+          contract_number: string
+          contract_url: string | null
+          created_at: string | null
+          employee_id: string
+          end_date: string
+          id: string
+          monthly_value: number
+          notes: string | null
+          payment_day: number | null
+          renewal_notice_days: number | null
+          service_scope: string
+          start_date: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          auto_renewal?: boolean | null
+          contract_number: string
+          contract_url?: string | null
+          created_at?: string | null
+          employee_id: string
+          end_date: string
+          id?: string
+          monthly_value: number
+          notes?: string | null
+          payment_day?: number | null
+          renewal_notice_days?: number | null
+          service_scope: string
+          start_date: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          auto_renewal?: boolean | null
+          contract_number?: string
+          contract_url?: string | null
+          created_at?: string | null
+          employee_id?: string
+          end_date?: string
+          id?: string
+          monthly_value?: number
+          notes?: string | null
+          payment_day?: number | null
+          renewal_notice_days?: number | null
+          service_scope?: string
+          start_date?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pj_contracts_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pj_invoices: {
+        Row: {
+          amount: number
+          contract_id: string | null
+          created_at: string | null
+          due_date: string | null
+          employee_id: string
+          id: string
+          invoice_number: string
+          invoice_url: string | null
+          issue_date: string
+          notes: string | null
+          payment_date: string | null
+          payment_status: string | null
+          reference_month: string
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          contract_id?: string | null
+          created_at?: string | null
+          due_date?: string | null
+          employee_id: string
+          id?: string
+          invoice_number: string
+          invoice_url?: string | null
+          issue_date: string
+          notes?: string | null
+          payment_date?: string | null
+          payment_status?: string | null
+          reference_month: string
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          contract_id?: string | null
+          created_at?: string | null
+          due_date?: string | null
+          employee_id?: string
+          id?: string
+          invoice_number?: string
+          invoice_url?: string | null
+          issue_date?: string
+          notes?: string | null
+          payment_date?: string | null
+          payment_status?: string | null
+          reference_month?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pj_invoices_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "pj_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pj_invoices_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       roles: {
         Row: {
           active: boolean | null
@@ -331,6 +774,54 @@ export type Database = {
           },
         ]
       }
+      trainings: {
+        Row: {
+          active: boolean | null
+          applies_to: string | null
+          created_at: string | null
+          description: string | null
+          duration_hours: number | null
+          id: string
+          instructor: string | null
+          location: string | null
+          name: string
+          required_for_roles: string[] | null
+          training_type: string | null
+          updated_at: string | null
+          validity_months: number | null
+        }
+        Insert: {
+          active?: boolean | null
+          applies_to?: string | null
+          created_at?: string | null
+          description?: string | null
+          duration_hours?: number | null
+          id?: string
+          instructor?: string | null
+          location?: string | null
+          name: string
+          required_for_roles?: string[] | null
+          training_type?: string | null
+          updated_at?: string | null
+          validity_months?: number | null
+        }
+        Update: {
+          active?: boolean | null
+          applies_to?: string | null
+          created_at?: string | null
+          description?: string | null
+          duration_hours?: number | null
+          id?: string
+          instructor?: string | null
+          location?: string | null
+          name?: string
+          required_for_roles?: string[] | null
+          training_type?: string | null
+          updated_at?: string | null
+          validity_months?: number | null
+        }
+        Relationships: []
+      }
       units: {
         Row: {
           active: boolean | null
@@ -405,6 +896,89 @@ export type Database = {
             columns: ["unit_id"]
             isOneToOne: false
             referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vacations: {
+        Row: {
+          acquisition_period_end: string
+          acquisition_period_start: string
+          approved_by_director: string | null
+          approved_by_hr: string | null
+          approved_by_manager: string | null
+          created_at: string | null
+          days_remaining: number | null
+          days_used: number | null
+          director_approval_date: string | null
+          employee_id: string
+          end_date: string | null
+          hr_approval_date: string | null
+          id: string
+          manager_approval_date: string | null
+          notes: string | null
+          request_date: string | null
+          return_date: string | null
+          start_date: string | null
+          status: string | null
+          updated_at: string | null
+          vacation_days: number
+          vacation_type: string | null
+        }
+        Insert: {
+          acquisition_period_end: string
+          acquisition_period_start: string
+          approved_by_director?: string | null
+          approved_by_hr?: string | null
+          approved_by_manager?: string | null
+          created_at?: string | null
+          days_remaining?: number | null
+          days_used?: number | null
+          director_approval_date?: string | null
+          employee_id: string
+          end_date?: string | null
+          hr_approval_date?: string | null
+          id?: string
+          manager_approval_date?: string | null
+          notes?: string | null
+          request_date?: string | null
+          return_date?: string | null
+          start_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+          vacation_days?: number
+          vacation_type?: string | null
+        }
+        Update: {
+          acquisition_period_end?: string
+          acquisition_period_start?: string
+          approved_by_director?: string | null
+          approved_by_hr?: string | null
+          approved_by_manager?: string | null
+          created_at?: string | null
+          days_remaining?: number | null
+          days_used?: number | null
+          director_approval_date?: string | null
+          employee_id?: string
+          end_date?: string | null
+          hr_approval_date?: string | null
+          id?: string
+          manager_approval_date?: string | null
+          notes?: string | null
+          request_date?: string | null
+          return_date?: string | null
+          start_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+          vacation_days?: number
+          vacation_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vacations_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
             referencedColumns: ["id"]
           },
         ]
