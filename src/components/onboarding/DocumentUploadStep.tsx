@@ -46,6 +46,23 @@ export function DocumentUploadStep({ contractType, token, onNext, onBack }: Docu
   );
   const [uploading, setUploading] = useState(false);
 
+  const sanitizeFileName = (fileName: string): string => {
+    // Remove extensão
+    const lastDotIndex = fileName.lastIndexOf('.');
+    const name = lastDotIndex > 0 ? fileName.substring(0, lastDotIndex) : fileName;
+    const extension = lastDotIndex > 0 ? fileName.substring(lastDotIndex) : '';
+    
+    // Remove acentos e caracteres especiais
+    const sanitized = name
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+      .replace(/[^a-zA-Z0-9_-]/g, '_') // Substitui caracteres especiais por _
+      .replace(/_+/g, '_') // Remove underscores duplicados
+      .replace(/^_|_$/g, ''); // Remove underscores no início e fim
+    
+    return sanitized + extension.toLowerCase();
+  };
+
   const handleFileSelect = async (index: number, file: File) => {
     if (!file) return;
 
@@ -87,8 +104,9 @@ export function DocumentUploadStep({ contractType, token, onNext, onBack }: Docu
         }
       }
 
-      // Upload para storage temporário
-      const fileName = `${documents[index].type}_${Date.now()}_${processedFile.name}`;
+      // Sanitizar nome do arquivo (remover acentos, espaços e caracteres especiais)
+      const sanitizedFileName = sanitizeFileName(processedFile.name);
+      const fileName = `${documents[index].type}_${Date.now()}_${sanitizedFileName}`;
       const filePath = `onboarding/${token}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
