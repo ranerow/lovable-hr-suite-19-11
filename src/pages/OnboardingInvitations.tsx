@@ -11,11 +11,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Copy, Mail, Clock, CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import { Copy, Mail, Clock, CheckCircle, XCircle, AlertCircle, FileText } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
 
 export default function OnboardingInvitations() {
+  const navigate = useNavigate();
   const { data: invitations, isLoading, refetch } = useQuery({
     queryKey: ["onboarding_invitations"],
     queryFn: async () => {
@@ -283,6 +285,16 @@ export default function OnboardingInvitations() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-1">
+                            {invitation.status === "concluido" && invitation.employee_id && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => navigate(`/employees/${invitation.employee_id}/review`)}
+                                title="Revisar Documentos"
+                              >
+                                <FileText className="h-4 w-4" />
+                              </Button>
+                            )}
                             {invitation.status !== "concluido" && (
                               <>
                                 <Button

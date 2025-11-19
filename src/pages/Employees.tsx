@@ -124,6 +124,7 @@ export default function Employees() {
                 <SelectContent>
                   <SelectItem value="all">Todos os status</SelectItem>
                   <SelectItem value="Ativo">Ativo</SelectItem>
+                  <SelectItem value="Aguardando Ativação">Aguardando Ativação</SelectItem>
                   <SelectItem value="Férias">Férias</SelectItem>
                   <SelectItem value="Afastado">Afastado</SelectItem>
                   <SelectItem value="Demitido">Demitido</SelectItem>
