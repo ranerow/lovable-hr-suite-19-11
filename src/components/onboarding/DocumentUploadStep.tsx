@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Upload, FileText, X, CheckCircle } from "lucide-react";
+import { Upload, FileText, X, CheckCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import imageCompression from "browser-image-compression";
 
 interface DocumentUpload {
   type: string;
@@ -48,22 +49,51 @@ export function DocumentUploadStep({ contractType, token, onNext, onBack }: Docu
   const handleFileSelect = async (index: number, file: File) => {
     if (!file) return;
 
-    // Validar tipo e tamanho
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    // Validar tipo e tamanho inicial
+    const maxSize = 10 * 1024 * 1024; // 10MB (antes da compressão)
     if (file.size > maxSize) {
-      toast.error("Arquivo muito grande. Máximo 5MB.");
+      toast.error("Arquivo muito grande. Máximo 10MB.");
       return;
     }
 
     setUploading(true);
     try {
+      let processedFile: File = file;
+      const originalSize = file.size;
+
+      // Comprimir apenas imagens
+      if (file.type.startsWith('image/')) {
+        toast.info("Comprimindo imagem...");
+        
+        const options = {
+          maxSizeMB: 1, // Máximo 1MB após compressão
+          maxWidthOrHeight: 1920, // Máximo 1920px
+          useWebWorker: true,
+          fileType: file.type,
+        };
+
+        try {
+          processedFile = await imageCompression(file, options);
+          const compressionPercent = Math.round((1 - processedFile.size / originalSize) * 100);
+          
+          if (compressionPercent > 0) {
+            toast.success(
+              `Imagem comprimida em ${compressionPercent}% (${formatFileSize(originalSize)} → ${formatFileSize(processedFile.size)})`
+            );
+          }
+        } catch (compressionError) {
+          console.warn("Erro na compressão, usando arquivo original:", compressionError);
+          // Continua com arquivo original se compressão falhar
+        }
+      }
+
       // Upload para storage temporário
-      const fileName = `${documents[index].type}_${Date.now()}_${file.name}`;
+      const fileName = `${documents[index].type}_${Date.now()}_${processedFile.name}`;
       const filePath = `onboarding/${token}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from("employee-documents")
-        .upload(filePath, file);
+        .upload(filePath, processedFile);
 
       if (uploadError) throw uploadError;
 
@@ -75,7 +105,7 @@ export function DocumentUploadStep({ contractType, token, onNext, onBack }: Docu
       const newDocuments = [...documents];
       newDocuments[index] = {
         ...newDocuments[index],
-        file,
+        file: processedFile,
         url: publicUrl,
       };
       setDocuments(newDocuments);
@@ -94,6 +124,14 @@ export function DocumentUploadStep({ contractType, token, onNext, onBack }: Docu
     } finally {
       setUploading(false);
     }
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
   };
 
   const handleRemoveFile = (index: number) => {
@@ -161,8 +199,12 @@ export function DocumentUploadStep({ contractType, token, onNext, onBack }: Docu
                     asChild
                   >
                     <span>
-                      <Upload className="h-4 w-4 mr-2" />
-                      Enviar
+                      {uploading ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Upload className="h-4 w-4 mr-2" />
+                      )}
+                      {uploading ? "Processando..." : "Enviar"}
                     </span>
                   </Button>
                   <input
