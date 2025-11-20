@@ -187,6 +187,10 @@ export default function Settings() {
             <Building2 className="h-4 w-4 mr-2" />
             Geral
           </TabsTrigger>
+          <TabsTrigger value="aparencia">
+            <Palette className="h-4 w-4 mr-2" />
+            Aparência
+          </TabsTrigger>
           <TabsTrigger value="rh">RH</TabsTrigger>
           <TabsTrigger value="notifications">
             <Bell className="h-4 w-4 mr-2" />
