@@ -1205,6 +1205,36 @@ export type Database = {
         }
         Relationships: []
       }
+      user_management_logs: {
+        Row: {
+          action: string
+          admin_user_id: string
+          changes: Json | null
+          created_at: string | null
+          id: string
+          ip_address: string | null
+          target_user_email: string
+        }
+        Insert: {
+          action: string
+          admin_user_id: string
+          changes?: Json | null
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          target_user_email: string
+        }
+        Update: {
+          action?: string
+          admin_user_id?: string
+          changes?: Json | null
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          target_user_email?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null

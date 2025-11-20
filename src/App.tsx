@@ -33,6 +33,7 @@ import NotFound from "./pages/NotFound";
 import OnboardingPortal from "./pages/OnboardingPortal";
 import OnboardingInvitations from "./pages/OnboardingInvitations";
 import EmployeeReview from "./pages/EmployeeReview";
+import UserManagement from "./pages/UserManagement";
 import { AppLayout } from "./components/layouts/AppLayout";
 
 const queryClient = new QueryClient();
@@ -73,6 +74,7 @@ const App = () => (
             <Route path="/onboarding-invitations" element={<ProtectedRoute><AppLayout><OnboardingInvitations /></AppLayout></ProtectedRoute>} />
             <Route path="/test-plan" element={<ProtectedRoute><AppLayout><TestPlan /></AppLayout></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><AppLayout><Settings /></AppLayout></ProtectedRoute>} />
+            <Route path="/user-management" element={<ProtectedRoute><AppLayout><UserManagement /></AppLayout></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
         </Routes>
       </TooltipProvider>
