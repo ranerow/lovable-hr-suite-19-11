@@ -14,7 +14,8 @@ import {
   DollarSign,
   Upload,
   UserPlus,
-  FolderOpen
+  FolderOpen,
+  ClipboardCheck
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
@@ -57,6 +58,7 @@ const configItems = [
   { title: "Cargos", url: "/roles", icon: Briefcase },
   { title: "Compliance", url: "/compliance", icon: Shield },
   { title: "Permissões", url: "/permissions", icon: Shield },
+  { title: "Plano de Testes", url: "/test-plan", icon: ClipboardCheck },
   { title: "Configurações", url: "/settings", icon: Settings },
 ];
 

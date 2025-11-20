@@ -26,6 +26,7 @@ import Permissions from "./pages/Permissions";
 import FinanceRH from "./pages/FinanceRH";
 import Documents from "./pages/Documents";
 import EmployeeDocuments from "./pages/EmployeeDocuments";
+import TestPlan from "./pages/TestPlan";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
@@ -70,6 +71,7 @@ const App = () => (
             <Route path="/documents" element={<ProtectedRoute><AppLayout><Documents /></AppLayout></ProtectedRoute>} />
             <Route path="/employee-documents" element={<ProtectedRoute><AppLayout><EmployeeDocuments /></AppLayout></ProtectedRoute>} />
             <Route path="/onboarding-invitations" element={<ProtectedRoute><AppLayout><OnboardingInvitations /></AppLayout></ProtectedRoute>} />
+            <Route path="/test-plan" element={<ProtectedRoute><AppLayout><TestPlan /></AppLayout></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><AppLayout><Settings /></AppLayout></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
         </Routes>
