@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Shield, Plus, Trash2, AlertTriangle, Search, Filter, Info, Crown, Users, Building, Briefcase } from "lucide-react";
+import { Shield, Plus, Trash2, AlertTriangle, Search, Filter, Info, Crown, Users, Building, Briefcase, Edit, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -48,6 +48,10 @@ export default function Permissions() {
   const [currentUserEmail, setCurrentUserEmail] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingRole, setEditingRole] = useState<any>(null);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [pendingUpdate, setPendingUpdate] = useState<any>(null);
   const queryClient = useQueryClient();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -61,6 +65,18 @@ export default function Permissions() {
   });
 
   const selectedRole = form.watch("role");
+
+  const editForm = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      user_id: "",
+      role: undefined,
+      unit_id: "",
+      department_id: "",
+    },
+  });
+
+  const selectedEditRole = editForm.watch("role");
 
   // Buscar usuários do sistema de autenticação
   const { data: authUsers } = useQuery({
@@ -221,6 +237,86 @@ export default function Permissions() {
   const confirmDeleteRole = () => {
     if (roleToDelete) {
       deleteRole.mutate(roleToDelete);
+    }
+  };
+
+  const updateRole = useMutation({
+    mutationFn: async (values: { id: string; role: "diretoria" | "rh_matriz" | "rh_filial" | "gestor" | "colaborador_clt" | "prestador_pj"; unit_id?: string; department_id?: string }) => {
+      const { id, ...updateData } = values;
+      
+      // Se mudou para rh_matriz, limpar unit_id
+      if (updateData.role === "rh_matriz") {
+        updateData.unit_id = undefined;
+      }
+
+      const { data, error } = await supabase
+        .from("user_roles")
+        .update(updateData)
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user_roles_admin"] });
+      toast.success("Nível de usuário atualizado com sucesso!");
+      setEditDialogOpen(false);
+      setConfirmDialogOpen(false);
+      setEditingRole(null);
+      setPendingUpdate(null);
+      editForm.reset();
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Erro ao atualizar nível");
+      console.error(error);
+    },
+  });
+
+  const handleEditRole = (role: any) => {
+    // Validação: não pode editar diretoria
+    if (role.role === "diretoria") {
+      toast.error("A role Diretoria não pode ser editada");
+      return;
+    }
+
+    // Validação: não pode editar a si mesmo
+    if (role.user_email === currentUserEmail) {
+      toast.error("Você não pode editar suas próprias permissões");
+      return;
+    }
+
+    setEditingRole(role);
+    editForm.reset({
+      user_id: role.user_id,
+      role: role.role,
+      unit_id: role.unit_id || "",
+      department_id: role.department_id || "",
+    });
+    setEditDialogOpen(true);
+  };
+
+  const onEditSubmit = (values: z.infer<typeof formSchema>) => {
+    // Validação: rh_filial deve ter unit_id
+    if (values.role === "rh_filial" && !values.unit_id) {
+      toast.error("RH Filial deve ter uma unidade vinculada");
+      return;
+    }
+
+    // Preparar dados para confirmação
+    setPendingUpdate({
+      id: editingRole.id,
+      role: values.role,
+      unit_id: values.unit_id || undefined,
+      department_id: values.department_id || undefined,
+      previousRole: editingRole.role,
+    });
+    setConfirmDialogOpen(true);
+  };
+
+  const confirmUpdate = () => {
+    if (pendingUpdate) {
+      updateRole.mutate(pendingUpdate);
     }
   };
 
@@ -521,7 +617,7 @@ export default function Permissions() {
                   <TableHead>Perfil</TableHead>
                   <TableHead>Unidade</TableHead>
                   <TableHead>Departamento</TableHead>
-                  <TableHead className="w-[50px]"></TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -545,16 +641,28 @@ export default function Permissions() {
                       {userRole.department?.name || "Todos"}
                     </TableCell>
                     <TableCell>
-                      {userRole.role !== "diretoria" && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteRole(userRole.id)}
-                          className="h-8 w-8"
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      )}
+                      <div className="flex items-center justify-end gap-1">
+                        {userRole.role !== "diretoria" && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleEditRole(userRole)}
+                              className="h-8 w-8"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDeleteRole(userRole.id)}
+                              className="h-8 w-8"
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -692,6 +800,185 @@ export default function Permissions() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Dialog de Edição */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Editar Nível de Usuário</DialogTitle>
+            <DialogDescription>
+              Altere o nível de acesso do usuário {editingRole?.user_name}
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...editForm}>
+            <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
+              <div className="bg-muted/50 p-3 rounded-lg">
+                <p className="text-sm font-medium mb-1">Usuário</p>
+                <p className="text-sm text-muted-foreground">{editingRole?.user_name}</p>
+                <p className="text-xs text-muted-foreground">{editingRole?.user_email}</p>
+              </div>
+
+              <div className="bg-muted/50 p-3 rounded-lg flex items-center gap-2">
+                <Badge variant={roleColors[editingRole?.role as keyof typeof roleColors] || "secondary"}>
+                  {roleLabels[editingRole?.role as keyof typeof roleLabels]}
+                </Badge>
+                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                <Badge variant={roleColors[selectedEditRole as keyof typeof roleColors] || "secondary"}>
+                  {roleLabels[selectedEditRole as keyof typeof roleLabels] || "Selecione"}
+                </Badge>
+              </div>
+
+              <FormField
+                control={editForm.control}
+                name="role"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Novo Nível</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o novo nível" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="rh_matriz">RH Matriz (Nível 1)</SelectItem>
+                        <SelectItem value="rh_filial">RH Filial (Nível 2)</SelectItem>
+                        <SelectItem value="gestor">Gestor (Nível 3)</SelectItem>
+                        <SelectItem value="colaborador_clt">Colaborador CLT</SelectItem>
+                        <SelectItem value="prestador_pj">Prestador PJ</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {(selectedEditRole === "rh_filial" || selectedEditRole === "gestor") && (
+                <FormField
+                  control={editForm.control}
+                  name="unit_id"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Unidade {selectedEditRole === "rh_filial" ? "(Obrigatório)" : "(Opcional)"}
+                      </FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione uma unidade" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {units?.map((unit) => (
+                            <SelectItem key={unit.id} value={unit.id}>
+                              {unit.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              {selectedEditRole === "gestor" && (
+                <FormField
+                  control={editForm.control}
+                  name="department_id"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Departamento (Opcional)</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione um departamento" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {departments?.map((dept) => (
+                            <SelectItem key={dept.id} value={dept.id}>
+                              {dept.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setEditDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={updateRole.isPending}>
+                  Continuar
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de Confirmação */}
+      <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Mudança de Nível</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3">
+                <p>Você está alterando o nível de acesso de:</p>
+                <div className="bg-muted/50 p-3 rounded-lg">
+                  <p className="font-medium">{editingRole?.user_name}</p>
+                  <p className="text-sm text-muted-foreground">{editingRole?.user_email}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant={roleColors[pendingUpdate?.previousRole as keyof typeof roleColors] || "secondary"}>
+                    {roleLabels[pendingUpdate?.previousRole as keyof typeof roleLabels]}
+                  </Badge>
+                  <ArrowRight className="h-4 w-4" />
+                  <Badge variant={roleColors[pendingUpdate?.role as keyof typeof roleColors] || "secondary"}>
+                    {roleLabels[pendingUpdate?.role as keyof typeof roleLabels]}
+                  </Badge>
+                </div>
+                <div className="bg-amber-500/10 border border-amber-500/20 p-3 rounded-lg">
+                  <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
+                    Impacto da Mudança:
+                  </p>
+                  <ul className="text-sm text-muted-foreground mt-1 space-y-1">
+                    {pendingUpdate?.role === "rh_matriz" && (
+                      <>
+                        <li>• Terá acesso a todas as filiais</li>
+                        <li>• Poderá aprovar férias e contratos</li>
+                      </>
+                    )}
+                    {pendingUpdate?.role === "rh_filial" && (
+                      <>
+                        <li>• Acesso restrito à filial vinculada</li>
+                        <li>• Pode cadastrar funcionários da filial</li>
+                      </>
+                    )}
+                    {pendingUpdate?.role === "gestor" && (
+                      <>
+                        <li>• Acesso ao departamento vinculado</li>
+                        <li>• Pode aprovar ponto e férias (1º nível)</li>
+                      </>
+                    )}
+                  </ul>
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmUpdate} disabled={updateRole.isPending}>
+              {updateRole.isPending ? "Atualizando..." : "Confirmar Mudança"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
