@@ -1305,6 +1305,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      validate_employee_documents: {
+        Args: { employee_id_param: string }
+        Returns: {
+          contract_type: string
+          is_valid: boolean
+          missing_documents: string[]
+        }[]
+      }
     }
     Enums: {
       app_role:

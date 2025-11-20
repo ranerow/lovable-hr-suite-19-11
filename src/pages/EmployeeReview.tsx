@@ -4,9 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import DocumentList from "@/components/DocumentList";
 import StatusHistory from "@/components/StatusHistory";
-import { CheckCircle, XCircle, ArrowLeft } from "lucide-react";
+import { CheckCircle, XCircle, ArrowLeft, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 export default function EmployeeReview() {
@@ -33,8 +34,26 @@ export default function EmployeeReview() {
     },
   });
 
+  const { data: documentValidation, isLoading: isLoadingValidation } = useQuery({
+    queryKey: ["employee-documents-validation", id],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("validate_employee_documents", {
+        employee_id_param: id,
+      });
+
+      if (error) throw error;
+      return data?.[0] || { is_valid: false, missing_documents: [], contract_type: "" };
+    },
+    enabled: !!id,
+  });
+
   const activateEmployee = useMutation({
     mutationFn: async () => {
+      // Validar documentos antes de ativar
+      if (!documentValidation?.is_valid) {
+        throw new Error("Documentos obrigatórios não foram enviados");
+      }
+
       const { error } = await supabase
         .from("employees")
         .update({ status: "Ativo" })
@@ -49,7 +68,11 @@ export default function EmployeeReview() {
       navigate("/employees");
     },
     onError: (error) => {
-      toast.error("Erro ao ativar funcionário");
+      if (error.message.includes("Documentos obrigatórios")) {
+        toast.error("Não é possível ativar: documentos obrigatórios faltando");
+      } else {
+        toast.error("Erro ao ativar funcionário");
+      }
       console.error(error);
     },
   });
@@ -69,7 +92,7 @@ export default function EmployeeReview() {
     },
   });
 
-  if (isLoading) {
+  if (isLoading || isLoadingValidation) {
     return (
       <div className="flex items-center justify-center h-96">
         <p className="text-muted-foreground">Carregando...</p>
@@ -84,6 +107,9 @@ export default function EmployeeReview() {
       </div>
     );
   }
+
+  const canActivate = documentValidation?.is_valid && employee.status === "Aguardando Ativação";
+  const hasMissingDocs = documentValidation?.missing_documents && documentValidation.missing_documents.length > 0;
 
   return (
     <div className="space-y-6">
@@ -109,6 +135,39 @@ export default function EmployeeReview() {
           {employee.status}
         </Badge>
       </div>
+
+      {/* Alerta de Documentos Faltantes */}
+      {hasMissingDocs && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Documentos Obrigatórios Faltando</AlertTitle>
+          <AlertDescription>
+            <p className="mb-2">
+              Os seguintes documentos são obrigatórios para funcionários {documentValidation.contract_type}:
+            </p>
+            <ul className="list-disc list-inside space-y-1">
+              {documentValidation.missing_documents.map((doc: string) => (
+                <li key={doc} className="text-sm">{doc}</li>
+              ))}
+            </ul>
+            <p className="mt-2 text-sm font-medium">
+              O funcionário não poderá ser ativado até que todos os documentos sejam enviados.
+            </p>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Confirmação de Documentos Completos */}
+      {!hasMissingDocs && documentValidation?.is_valid && (
+        <Alert className="border-success bg-success/10">
+          <CheckCircle className="h-4 w-4 text-success" />
+          <AlertTitle className="text-success">Documentação Completa</AlertTitle>
+          <AlertDescription className="text-success/90">
+            Todos os documentos obrigatórios para funcionários {documentValidation.contract_type} foram enviados.
+            O funcionário está pronto para ser ativado.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Dados Pessoais */}
       <Card>
@@ -257,7 +316,8 @@ export default function EmployeeReview() {
           </Button>
           <Button
             onClick={() => activateEmployee.mutate()}
-            disabled={activateEmployee.isPending}
+            disabled={activateEmployee.isPending || !canActivate}
+            title={!canActivate && hasMissingDocs ? "Documentos obrigatórios faltando" : ""}
           >
             <CheckCircle className="h-4 w-4 mr-2" />
             Ativar Funcionário
