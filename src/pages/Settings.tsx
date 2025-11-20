@@ -1,19 +1,22 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { Building2, Bell, Shield, Plug, Database, Palette } from "lucide-react";
+import { Building2, Bell, Shield, Plug, Database, Palette, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { FontSizeSelector } from "@/components/settings/FontSizeSelector";
 import { ThemeSelector } from "@/components/settings/ThemeSelector";
 
 export default function Settings() {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isSaving, setIsSaving] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(false);
 
@@ -182,7 +185,7 @@ export default function Settings() {
       </div>
 
       <Tabs defaultValue="general" className="space-y-4">
-        <TabsList>
+        <TabsList className="grid grid-cols-4 lg:grid-cols-8 gap-2">
           <TabsTrigger value="general">
             <Building2 className="h-4 w-4 mr-2" />
             Geral
@@ -190,6 +193,10 @@ export default function Settings() {
           <TabsTrigger value="aparencia">
             <Palette className="h-4 w-4 mr-2" />
             Aparência
+          </TabsTrigger>
+          <TabsTrigger value="usuarios">
+            <Users className="h-4 w-4 mr-2" />
+            Usuários
           </TabsTrigger>
           <TabsTrigger value="rh">RH</TabsTrigger>
           <TabsTrigger value="notifications">
@@ -266,6 +273,116 @@ export default function Settings() {
             </CardHeader>
             <CardContent>
               <FontSizeSelector />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="usuarios" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Hierarquia de Usuários do Sistema
+              </CardTitle>
+              <CardDescription>
+                Entenda os níveis de acesso e gerencie permissões
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Master Admin */}
+              <div className="border-l-4 border-destructive pl-4 py-2 bg-destructive/5 rounded-r-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <Shield className="h-5 w-5 text-destructive" />
+                  <h3 className="font-semibold text-lg">Master - Admin do Sistema</h3>
+                  <Badge variant="destructive">Nível 0</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground mb-2">
+                  <strong>ti@isssl.com.br</strong> - Acesso total ao sistema
+                </p>
+                <div className="grid gap-1 text-sm">
+                  <p className="text-green-600">✓ Gerenciar permissões de usuários</p>
+                  <p className="text-green-600">✓ Configurações do sistema</p>
+                  <p className="text-green-600">✓ Todas as funcionalidades de RH</p>
+                  <p className="text-green-600">✓ Acesso a todas as filiais e departamentos</p>
+                </div>
+              </div>
+
+              {/* Nível 1 - RH Gerente/Supervisor */}
+              <div className="border-l-4 border-primary pl-4 py-2 bg-primary/5 rounded-r-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <Users className="h-5 w-5 text-primary" />
+                  <h3 className="font-semibold text-lg">Nível 1 - Gerente/Supervisor de RH</h3>
+                  <Badge>RH Matriz</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Visão completa de todas as filiais e departamentos
+                </p>
+                <div className="grid gap-1 text-sm">
+                  <p className="text-green-600">✓ Ver todas as filiais e departamentos</p>
+                  <p className="text-green-600">✓ Criar/editar funcionários CLT e PJ</p>
+                  <p className="text-green-600">✓ Aprovar férias, contratos, documentos</p>
+                  <p className="text-green-600">✓ Acessar relatórios financeiros</p>
+                  <p className="text-green-600">✓ Gerenciar benefícios e treinamentos</p>
+                  <p className="text-red-600">✗ Não pode alterar permissões de usuários</p>
+                  <p className="text-red-600">✗ Não pode modificar configurações do sistema</p>
+                </div>
+              </div>
+
+              {/* Nível 2 - RH Assistente/Analista */}
+              <div className="border-l-4 border-blue-500 pl-4 py-2 bg-blue-500/5 rounded-r-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <Users className="h-5 w-5 text-blue-500" />
+                  <h3 className="font-semibold text-lg">Nível 2 - Assistente/Analista de RH</h3>
+                  <Badge variant="secondary">RH Filial</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Acesso restrito à filial específica
+                </p>
+                <div className="grid gap-1 text-sm">
+                  <p className="text-green-600">✓ Ver apenas funcionários da filial vinculada</p>
+                  <p className="text-green-600">✓ Criar/editar funcionários da filial</p>
+                  <p className="text-green-600">✓ Registrar ponto, documentos, benefícios</p>
+                  <p className="text-green-600">✓ Solicitar aprovações de férias</p>
+                  <p className="text-red-600">✗ Não vê dados de outras filiais</p>
+                  <p className="text-red-600">✗ Não aprova férias (apenas registra)</p>
+                  <p className="text-red-600">✗ Não acessa relatórios financeiros consolidados</p>
+                </div>
+              </div>
+
+              {/* Nível 3 - Gestor */}
+              <div className="border-l-4 border-amber-500 pl-4 py-2 bg-amber-500/5 rounded-r-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <Users className="h-5 w-5 text-amber-500" />
+                  <h3 className="font-semibold text-lg">Nível 3 - Gestor de Departamento</h3>
+                  <Badge variant="outline">Gestor</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Gerencia equipe do seu departamento
+                </p>
+                <div className="grid gap-1 text-sm">
+                  <p className="text-green-600">✓ Ver funcionários do seu departamento</p>
+                  <p className="text-green-600">✓ Aprovar ponto e ajustes de jornada</p>
+                  <p className="text-green-600">✓ Aprovar férias (1º nível de aprovação)</p>
+                  <p className="text-green-600">✓ Visualizar timesheets da equipe</p>
+                  <p className="text-red-600">✗ Não cria/edita funcionários</p>
+                  <p className="text-red-600">✗ Não acessa dados financeiros</p>
+                </div>
+              </div>
+
+              <Separator />
+
+              <Button 
+                className="w-full" 
+                size="lg"
+                onClick={() => navigate("/permissions")}
+              >
+                <Shield className="h-4 w-4 mr-2" />
+                Gerenciar Usuários do Sistema
+              </Button>
+
+              <p className="text-xs text-muted-foreground text-center">
+                Clique no botão acima para atribuir ou remover permissões de usuários
+              </p>
             </CardContent>
           </Card>
         </TabsContent>
