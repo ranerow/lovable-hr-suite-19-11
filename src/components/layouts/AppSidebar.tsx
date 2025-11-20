@@ -13,7 +13,8 @@ import {
   Shield,
   DollarSign,
   Upload,
-  UserPlus
+  UserPlus,
+  FolderOpen
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
@@ -33,6 +34,7 @@ const menuItems = [
   { title: "Funcionários", url: "/employees", icon: Users },
   { title: "Convites Onboarding", url: "/onboarding-invitations", icon: UserPlus },
   { title: "Documentos", url: "/documents", icon: Upload },
+  { title: "Docs Consolidados", url: "/employee-documents", icon: FolderOpen },
   { title: "Financeiro RH", url: "/finance-rh", icon: DollarSign },
   { title: "Ponto", url: "/timesheets", icon: Clock },
   { title: "Relatórios", url: "/reports", icon: FileText },
