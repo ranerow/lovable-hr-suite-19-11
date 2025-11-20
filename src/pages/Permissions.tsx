@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Shield, Plus, Trash2, AlertTriangle } from "lucide-react";
+import { Shield, Plus, Trash2, AlertTriangle, Search, Filter, Info, Crown, Users, Building, Briefcase } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -45,6 +46,8 @@ export default function Permissions() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [roleToDelete, setRoleToDelete] = useState<string | null>(null);
   const [currentUserEmail, setCurrentUserEmail] = useState<string>("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState<string>("all");
   const queryClient = useQueryClient();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -221,31 +224,141 @@ export default function Permissions() {
     }
   };
 
+  // Filtrar usuários
+  const filteredRoles = userRoles?.filter((role: any) => {
+    const matchesSearch = 
+      role.user_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      role.user_email?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRole = roleFilter === "all" || role.role === roleFilter;
+    return matchesSearch && matchesRole;
+  });
+
+  // Estatísticas
+  const stats = {
+    total: userRoles?.length || 0,
+    diretoria: userRoles?.filter((r: any) => r.role === "diretoria").length || 0,
+    rh_matriz: userRoles?.filter((r: any) => r.role === "rh_matriz").length || 0,
+    rh_filial: userRoles?.filter((r: any) => r.role === "rh_filial").length || 0,
+    gestor: userRoles?.filter((r: any) => r.role === "gestor").length || 0,
+  };
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Permissões</h1>
-        <p className="text-muted-foreground mt-1">Gerenciamento de perfis e acessos</p>
+        <h1 className="text-3xl font-bold text-foreground">Gerenciamento de Usuários</h1>
+        <p className="text-muted-foreground mt-1">
+          Configure permissões hierárquicas e controle de acesso ao sistema
+        </p>
+      </div>
+
+      {/* Estatísticas */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              Total
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.total}</div>
+            <p className="text-xs text-muted-foreground">usuários ativos</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Crown className="h-4 w-4 text-destructive" />
+              Admin
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.diretoria}</div>
+            <p className="text-xs text-muted-foreground">master</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Users className="h-4 w-4 text-primary" />
+              RH Matriz
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.rh_matriz}</div>
+            <p className="text-xs text-muted-foreground">nível 1</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Building className="h-4 w-4 text-blue-500" />
+              RH Filial
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.rh_filial}</div>
+            <p className="text-xs text-muted-foreground">nível 2</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Briefcase className="h-4 w-4 text-amber-500" />
+              Gestores
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.gestor}</div>
+            <p className="text-xs text-muted-foreground">nível 3</p>
+          </CardContent>
+        </Card>
       </div>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              Perfis de Usuário
-            </CardTitle>
-            <CardDescription>
-              {userRoles?.length || 0} perfil(is) configurado(s)
-            </CardDescription>
-          </div>
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Adicionar Permissão
-              </Button>
-            </DialogTrigger>
+        <CardHeader>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                Usuários com Permissões
+              </CardTitle>
+              <CardDescription className="mt-1">
+                {filteredRoles?.length || 0} de {userRoles?.length || 0} usuário(s)
+              </CardDescription>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="relative flex-1 sm:w-64">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por nome ou email..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-8"
+                />
+              </div>
+              <Select value={roleFilter} onValueChange={setRoleFilter}>
+                <SelectTrigger className="w-[180px]">
+                  <Filter className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="Filtrar por perfil" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os perfis</SelectItem>
+                  <SelectItem value="diretoria">Diretoria</SelectItem>
+                  <SelectItem value="rh_matriz">RH Matriz</SelectItem>
+                  <SelectItem value="rh_filial">RH Filial</SelectItem>
+                  <SelectItem value="gestor">Gestor</SelectItem>
+                  <SelectItem value="colaborador_clt">Colaborador CLT</SelectItem>
+                  <SelectItem value="prestador_pj">Prestador PJ</SelectItem>
+                </SelectContent>
+              </Select>
+              <Dialog open={open} onOpenChange={setOpen}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Adicionar Permissão
+                  </Button>
+                </DialogTrigger>
             <DialogContent className="sm:max-w-[500px]">
               <DialogHeader>
                 <DialogTitle>Atribuir Permissão</DialogTitle>
@@ -393,11 +506,13 @@ export default function Permissions() {
               </Form>
             </DialogContent>
           </Dialog>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="text-center py-8 text-muted-foreground">Carregando...</div>
-          ) : userRoles && userRoles.length > 0 ? (
+          ) : filteredRoles && filteredRoles.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
@@ -410,7 +525,7 @@ export default function Permissions() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {userRoles.map((userRole: any) => (
+                {filteredRoles.map((userRole: any) => (
                   <TableRow key={userRole.id}>
                     <TableCell className="font-medium">
                       {userRole.user_name}
@@ -445,11 +560,136 @@ export default function Permissions() {
                 ))}
               </TableBody>
             </Table>
+          ) : searchTerm || roleFilter !== "all" ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Search className="h-8 w-8 mx-auto mb-2 opacity-50" />
+              <p>Nenhum resultado encontrado</p>
+              <p className="text-sm">Tente ajustar os filtros de busca</p>
+            </div>
           ) : (
             <div className="text-center py-8 text-muted-foreground">
               Nenhum perfil configurado
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Hierarquia Visual de Perfis */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Info className="h-5 w-5" />
+            Hierarquia de Perfis e Permissões
+          </CardTitle>
+          <CardDescription>
+            Entenda os níveis de acesso e suas responsabilidades
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Nível 0 - Master */}
+          <div className="border-l-4 border-destructive pl-4 py-3 bg-destructive/5 rounded-r-lg">
+            <div className="flex items-start gap-3">
+              <Crown className="h-5 w-5 text-destructive mt-0.5" />
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <h4 className="font-semibold">MASTER - Admin do Sistema</h4>
+                  <Badge variant="destructive">Nível 0</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Role: <code className="bg-muted px-1 rounded">diretoria</code> • Apenas ti@isssl.com.br
+                </p>
+                <div className="text-sm space-y-1">
+                  <p className="text-green-600">✓ Acesso total e irrestrito ao sistema</p>
+                  <p className="text-green-600">✓ Único que pode gerenciar permissões de usuários</p>
+                  <p className="text-green-600">✓ Configurações críticas do sistema</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Nível 1 - RH Matriz */}
+          <div className="border-l-4 border-primary pl-4 py-3 bg-primary/5 rounded-r-lg">
+            <div className="flex items-start gap-3">
+              <Users className="h-5 w-5 text-primary mt-0.5" />
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <h4 className="font-semibold">Gerente/Supervisor de RH</h4>
+                  <Badge>Nível 1</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Role: <code className="bg-muted px-1 rounded">rh_matriz</code> • Acesso geral (todas filiais)
+                </p>
+                <div className="text-sm space-y-1">
+                  <p className="text-green-600">✓ Visualizar e gerenciar todas as filiais</p>
+                  <p className="text-green-600">✓ CRUD completo de funcionários CLT e PJ</p>
+                  <p className="text-green-600">✓ Aprovar férias, contratos, documentos</p>
+                  <p className="text-green-600">✓ Relatórios financeiros consolidados</p>
+                  <p className="text-red-600">✗ Não pode alterar permissões de sistema</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Nível 2 - RH Filial */}
+          <div className="border-l-4 border-blue-500 pl-4 py-3 bg-blue-500/5 rounded-r-lg">
+            <div className="flex items-start gap-3">
+              <Building className="h-5 w-5 text-blue-500 mt-0.5" />
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <h4 className="font-semibold">Assistente/Analista de RH</h4>
+                  <Badge variant="secondary">Nível 2</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Role: <code className="bg-muted px-1 rounded">rh_filial</code> • Vinculado a uma unidade específica
+                </p>
+                <div className="text-sm space-y-1">
+                  <p className="text-green-600">✓ Visualizar apenas funcionários da filial vinculada</p>
+                  <p className="text-green-600">✓ Cadastrar e editar funcionários da filial</p>
+                  <p className="text-green-600">✓ Registrar documentos, ponto, benefícios</p>
+                  <p className="text-red-600">✗ Não aprova férias (apenas solicita)</p>
+                  <p className="text-red-600">✗ Sem acesso a outras filiais</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Nível 3 - Gestor */}
+          <div className="border-l-4 border-amber-500 pl-4 py-3 bg-amber-500/5 rounded-r-lg">
+            <div className="flex items-start gap-3">
+              <Briefcase className="h-5 w-5 text-amber-500 mt-0.5" />
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <h4 className="font-semibold">Gestor de Departamento</h4>
+                  <Badge variant="outline">Nível 3</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Role: <code className="bg-muted px-1 rounded">gestor</code> • Pode ter unidade e/ou departamento
+                </p>
+                <div className="text-sm space-y-1">
+                  <p className="text-green-600">✓ Visualizar equipe do departamento</p>
+                  <p className="text-green-600">✓ Aprovar ponto e jornadas de trabalho</p>
+                  <p className="text-green-600">✓ Primeira aprovação de férias</p>
+                  <p className="text-red-600">✗ Não cadastra/edita funcionários</p>
+                  <p className="text-red-600">✗ Sem acesso financeiro</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-muted/50 p-4 rounded-lg border">
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="h-4 w-4 text-amber-500 mt-0.5" />
+              <div className="text-sm">
+                <p className="font-medium mb-1">Regras de Segurança:</p>
+                <ul className="space-y-1 text-muted-foreground">
+                  <li>• RH Filial DEVE ter uma unidade vinculada</li>
+                  <li>• Gestor pode ter unidade e/ou departamento opcionais</li>
+                  <li>• Não é possível atribuir permissões a si mesmo</li>
+                  <li>• A role Diretoria é protegida e só pode ser do ti@isssl.com.br</li>
+                </ul>
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
