@@ -7,8 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { Building2, Bell, Shield, Plug, Database } from "lucide-react";
+import { Building2, Bell, Shield, Plug, Database, Palette } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { FontSizeSelector } from "@/components/settings/FontSizeSelector";
+import { ThemeSelector } from "@/components/settings/ThemeSelector";
 
 export default function Settings() {
   const { toast } = useToast();
@@ -231,6 +233,35 @@ export default function Settings() {
                   <Input id="language" defaultValue="pt-BR" />
                 </div>
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="aparencia" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Palette className="h-5 w-5" />
+                Tema da Interface
+              </CardTitle>
+              <CardDescription>
+                Escolha entre tema claro, escuro ou automático
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ThemeSelector />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Tamanho da Fonte</CardTitle>
+              <CardDescription>
+                Ajuste o tamanho do texto em todo o sistema
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <FontSizeSelector />
             </CardContent>
           </Card>
         </TabsContent>

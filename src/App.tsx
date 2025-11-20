@@ -2,6 +2,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ThemeProvider } from "next-themes";
+import { FontSizeProvider } from "@/contexts/FontSizeContext";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import Index from "./pages/Index";
@@ -35,10 +37,12 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <FontSizeProvider>
+        <BrowserRouter>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
         <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
@@ -66,9 +70,11 @@ const App = () => (
             <Route path="/onboarding-invitations" element={<ProtectedRoute><AppLayout><OnboardingInvitations /></AppLayout></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><AppLayout><Settings /></AppLayout></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
-          </Routes>
-        </TooltipProvider>
-      </BrowserRouter>
+        </Routes>
+      </TooltipProvider>
+    </BrowserRouter>
+      </FontSizeProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
