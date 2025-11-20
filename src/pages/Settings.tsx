@@ -282,10 +282,28 @@ export default function Settings() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="h-5 w-5" />
+                Gerenciar Usuários do Sistema
+              </CardTitle>
+              <CardDescription>
+                Criar, editar e excluir contas de acesso ao sistema
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button onClick={() => navigate("/user-management")}>
+                <Users className="mr-2 h-4 w-4" />
+                Abrir Gerenciamento de Usuários
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
                 Hierarquia de Usuários do Sistema
               </CardTitle>
               <CardDescription>
-                Entenda os níveis de acesso e gerencie permissões
+                Entenda os níveis de acesso e permissões
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
