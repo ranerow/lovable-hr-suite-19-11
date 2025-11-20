@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -5,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Mail, Phone, MapPin, Calendar, Briefcase, FileText, Clock } from "lucide-react";
+import { ArrowLeft, Mail, Phone, MapPin, Calendar, Briefcase, FileText, Clock, Edit } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -22,10 +23,15 @@ import { toast } from "sonner";
 import DocumentUpload from "@/components/DocumentUpload";
 import DocumentList from "@/components/DocumentList";
 import StatusHistory from "@/components/StatusHistory";
+import { EmployeeEditDialog } from "@/components/EmployeeEditDialog";
+import { EmployeeEditHistory } from "@/components/EmployeeEditHistory";
+import { useUserRole } from "@/hooks/useUserRole";
 
 export default function EmployeeDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { canEditEmployee } = useUserRole();
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: employee, isLoading } = useQuery({
@@ -132,7 +138,14 @@ export default function EmployeeDetail() {
             Informações detalhadas e histórico
           </p>
         </div>
-        <Button variant="outline">Editar</Button>
+        <Button 
+          variant="outline" 
+          onClick={() => setIsEditDialogOpen(true)}
+          disabled={!canEditEmployee(employee.unit_id, employee.department_id)}
+        >
+          <Edit className="h-4 w-4 mr-2" />
+          Editar
+        </Button>
       </div>
 
       <Card>
@@ -189,10 +202,11 @@ export default function EmployeeDetail() {
       </Card>
 
       <Tabs defaultValue="personal" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="personal">Dados Pessoais</TabsTrigger>
           <TabsTrigger value="documents">Documentos</TabsTrigger>
           <TabsTrigger value="history">Histórico</TabsTrigger>
+          <TabsTrigger value="edit-history">Alterações</TabsTrigger>
           <TabsTrigger value="timesheet">Histórico de Ponto</TabsTrigger>
           <TabsTrigger value="additional">Informações</TabsTrigger>
         </TabsList>
@@ -387,9 +401,13 @@ export default function EmployeeDetail() {
               )}
         </TabsContent>
 
-        <TabsContent value="history" className="space-y-4">
-          <StatusHistory employeeId={id!} />
-        </TabsContent>
+            <TabsContent value="history" className="space-y-4">
+              <StatusHistory employeeId={id!} />
+            </TabsContent>
+
+            <TabsContent value="edit-history" className="space-y-4">
+              <EmployeeEditHistory employeeId={id!} />
+            </TabsContent>
 
         <TabsContent value="timesheet" className="space-y-4">
           <Card>
@@ -522,7 +540,19 @@ export default function EmployeeDetail() {
         <TabsContent value="history" className="space-y-4">
           <StatusHistory employeeId={id!} />
         </TabsContent>
+
+        <TabsContent value="edit-history" className="space-y-4">
+          <EmployeeEditHistory employeeId={id!} />
+        </TabsContent>
       </Tabs>
+
+      {employee && (
+        <EmployeeEditDialog
+          employee={employee}
+          open={isEditDialogOpen}
+          onOpenChange={setIsEditDialogOpen}
+        />
+      )}
     </div>
   );
 }

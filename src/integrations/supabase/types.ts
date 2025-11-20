@@ -346,6 +346,47 @@ export type Database = {
           },
         ]
       }
+      employee_edit_history: {
+        Row: {
+          changed_fields: Json
+          created_at: string | null
+          edited_at: string | null
+          edited_by: string
+          employee_id: string
+          id: string
+          ip_address: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          changed_fields: Json
+          created_at?: string | null
+          edited_at?: string | null
+          edited_by: string
+          employee_id: string
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          changed_fields?: Json
+          created_at?: string | null
+          edited_at?: string | null
+          edited_by?: string
+          employee_id?: string
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_edit_history_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employee_status_history: {
         Row: {
           changed_at: string
