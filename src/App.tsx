@@ -25,6 +25,7 @@ import Reports from "./pages/Reports";
 import Permissions from "./pages/Permissions";
 import FinanceRH from "./pages/FinanceRH";
 import Documents from "./pages/Documents";
+import EmployeeDocuments from "./pages/EmployeeDocuments";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
@@ -67,6 +68,7 @@ const App = () => (
             <Route path="/permissions" element={<ProtectedRoute><AppLayout><Permissions /></AppLayout></ProtectedRoute>} />
             <Route path="/finance-rh" element={<ProtectedRoute><AppLayout><FinanceRH /></AppLayout></ProtectedRoute>} />
             <Route path="/documents" element={<ProtectedRoute><AppLayout><Documents /></AppLayout></ProtectedRoute>} />
+            <Route path="/employee-documents" element={<ProtectedRoute><AppLayout><EmployeeDocuments /></AppLayout></ProtectedRoute>} />
             <Route path="/onboarding-invitations" element={<ProtectedRoute><AppLayout><OnboardingInvitations /></AppLayout></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><AppLayout><Settings /></AppLayout></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
