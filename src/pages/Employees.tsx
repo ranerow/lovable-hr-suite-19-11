@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { BulkImportDialog } from "@/components/employees/BulkImportDialog";
-import { DeleteEmployeeDialog } from "@/components/employees/DeleteEmployeeDialog";
+import { ArchiveEmployeeDialog } from "@/components/employees/ArchiveEmployeeDialog";
 import { useUserRole } from "@/hooks/useUserRole";
 import { toast } from "sonner";
 
@@ -272,9 +272,11 @@ export default function Employees() {
                             Editar
                           </Button>
                           {isAdmin && (
-                            <DeleteEmployeeDialog
+                            <ArchiveEmployeeDialog
                               employeeName={employee.full_name}
+                              employeeId={employee.id}
                               onConfirm={() => handleDeleteEmployee(employee.id, employee.email)}
+                              disabled={false}
                             />
                           )}
                         </div>

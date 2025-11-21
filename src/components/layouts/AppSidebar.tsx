@@ -15,7 +15,8 @@ import {
   Upload,
   UserPlus,
   FolderOpen,
-  ClipboardCheck
+  ClipboardCheck,
+  Archive
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
@@ -33,6 +34,7 @@ import {
 const menuItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Funcionários", url: "/employees", icon: Users },
+  { title: "Arquivados", url: "/archived-employees", icon: Archive },
   { title: "Convites Onboarding", url: "/onboarding-invitations", icon: UserPlus },
   { title: "Documentos", url: "/documents", icon: Upload },
   { title: "Docs Consolidados", url: "/employee-documents", icon: FolderOpen },
