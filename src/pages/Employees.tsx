@@ -23,14 +23,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { BulkImportDialog } from "@/components/employees/BulkImportDialog";
+import { DeleteEmployeeDialog } from "@/components/employees/DeleteEmployeeDialog";
+import { useUserRole } from "@/hooks/useUserRole";
+import { toast } from "sonner";
 
 export default function Employees() {
   const navigate = useNavigate();
+  const { isAdmin } = useUserRole();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [contractFilter, setContractFilter] = useState<string>("all");
 
-  const { data: employees, isLoading } = useQuery({
+  const { data: employees, isLoading, refetch } = useQuery({
     queryKey: ["employees"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -79,6 +84,44 @@ export default function Employees() {
     return matchesSearch && matchesStatus && matchesContract;
   });
 
+  const handleDeleteEmployee = async (employeeId: string, employeeEmail: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast.error("Usuário não autenticado");
+        return;
+      }
+
+      // Não permitir que o usuário exclua a si mesmo
+      if (user.email === employeeEmail) {
+        toast.error("Você não pode excluir sua própria conta");
+        return;
+      }
+
+      const { error } = await supabase
+        .from("employees")
+        .delete()
+        .eq("id", employeeId);
+
+      if (error) throw error;
+
+      // Registrar em logs
+      await supabase.from("user_management_logs").insert({
+        admin_user_id: user.id,
+        action: "delete_employee",
+        target_user_email: employeeEmail,
+        changes: { employee_id: employeeId },
+      });
+
+      toast.success("Funcionário excluído com sucesso");
+      refetch();
+    } catch (error: any) {
+      console.error("Erro ao excluir funcionário:", error);
+      toast.error(`Erro ao excluir funcionário: ${error.message}`);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
       Ativo: "bg-success text-success-foreground",
@@ -96,10 +139,13 @@ export default function Employees() {
           <h1 className="text-3xl font-bold text-foreground">Funcionários</h1>
           <p className="text-muted-foreground">Gerencie sua equipe</p>
         </div>
-        <Button onClick={() => navigate("/employees/new")} className="gap-2">
-          <Plus className="h-4 w-4" />
-          Novo Funcionário
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => navigate("/employees/new")} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Novo Funcionário
+          </Button>
+          {isAdmin && <BulkImportDialog />}
+        </div>
       </div>
 
       <Card>
@@ -225,6 +271,12 @@ export default function Employees() {
                           >
                             Editar
                           </Button>
+                          {isAdmin && (
+                            <DeleteEmployeeDialog
+                              employeeName={employee.full_name}
+                              onConfirm={() => handleDeleteEmployee(employee.id, employee.email)}
+                            />
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>

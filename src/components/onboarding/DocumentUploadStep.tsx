@@ -1,10 +1,18 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Upload, FileText, X, CheckCircle, Loader2 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Upload, FileText, X, CheckCircle, Loader2, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import imageCompression from "browser-image-compression";
+import {
+  validateFileFormat,
+  validateFileSize,
+  validateFileIntegrity,
+  formatFileSize,
+  ERROR_MESSAGES,
+} from "@/utils/documentValidator";
 
 interface DocumentUpload {
   type: string;
@@ -45,6 +53,7 @@ export function DocumentUploadStep({ contractType, token, onNext, onBack }: Docu
     documentTypes.map(doc => ({ ...doc, file: undefined, url: undefined }))
   );
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const sanitizeFileName = (fileName: string): string => {
     // Remove extensão
@@ -66,25 +75,40 @@ export function DocumentUploadStep({ contractType, token, onNext, onBack }: Docu
   const handleFileSelect = async (index: number, file: File) => {
     if (!file) return;
 
-    // Validar tipo e tamanho inicial
-    const maxSize = 10 * 1024 * 1024; // 10MB (antes da compressão)
-    if (file.size > maxSize) {
-      toast.error("Arquivo muito grande. Máximo 10MB.");
+    // 1️⃣ Validar formato
+    if (!validateFileFormat(file)) {
+      toast.error("❌ Formato inválido! Aceito apenas: JPG, PNG, WEBP ou PDF");
+      return;
+    }
+
+    // 2️⃣ Validar tamanho ANTES de processar
+    if (!validateFileSize(file, 10)) {
+      toast.error(`❌ Arquivo muito grande (${formatFileSize(file.size)}). Máximo: 10MB`);
+      return;
+    }
+
+    // 3️⃣ Validar integridade
+    try {
+      await validateFileIntegrity(file);
+    } catch (error) {
+      toast.error("❌ Arquivo corrompido ou inválido");
       return;
     }
 
     setUploading(true);
+    setUploadProgress(0);
     try {
       let processedFile: File = file;
       const originalSize = file.size;
 
       // Comprimir apenas imagens
       if (file.type.startsWith('image/')) {
+        setUploadProgress(20);
         toast.info("Comprimindo imagem...");
         
         const options = {
-          maxSizeMB: 1, // Máximo 1MB após compressão
-          maxWidthOrHeight: 1920, // Máximo 1920px
+          maxSizeMB: 1,
+          maxWidthOrHeight: 1920,
           useWebWorker: true,
           fileType: file.type,
         };
@@ -98,22 +122,27 @@ export function DocumentUploadStep({ contractType, token, onNext, onBack }: Docu
               `Imagem comprimida em ${compressionPercent}% (${formatFileSize(originalSize)} → ${formatFileSize(processedFile.size)})`
             );
           }
+          setUploadProgress(50);
         } catch (compressionError) {
           console.warn("Erro na compressão, usando arquivo original:", compressionError);
-          // Continua com arquivo original se compressão falhar
         }
+      } else {
+        setUploadProgress(30);
       }
 
-      // Sanitizar nome do arquivo (remover acentos, espaços e caracteres especiais)
+      // Sanitizar nome do arquivo
       const sanitizedFileName = sanitizeFileName(processedFile.name);
       const fileName = `${documents[index].type}_${Date.now()}_${sanitizedFileName}`;
       const filePath = `onboarding/${token}/${fileName}`;
 
+      setUploadProgress(70);
       const { error: uploadError } = await supabase.storage
         .from("employee-documents")
         .upload(filePath, processedFile);
 
       if (uploadError) throw uploadError;
+      
+      setUploadProgress(90);
 
       // Obter URL pública
       const { data: { publicUrl } } = supabase.storage
@@ -128,29 +157,19 @@ export function DocumentUploadStep({ contractType, token, onNext, onBack }: Docu
       };
       setDocuments(newDocuments);
 
+      setUploadProgress(100);
       toast.success("Documento enviado com sucesso!");
     } catch (error: any) {
-      console.error("Erro completo ao fazer upload:", {
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        code: error.code,
-        statusCode: error.statusCode,
-        error: error
-      });
-      toast.error(`Erro ao enviar documento: ${error.message || 'Erro desconhecido'}`);
+      console.error("Erro ao fazer upload:", error);
+      const errorMessage = ERROR_MESSAGES[error.code] || 
+        `Erro ao enviar: ${error.message || 'Erro desconhecido'}`;
+      toast.error(errorMessage);
     } finally {
       setUploading(false);
+      setUploadProgress(0);
     }
   };
 
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-  };
 
   const handleRemoveFile = (index: number) => {
     const newDocuments = [...documents];
@@ -190,24 +209,47 @@ export function DocumentUploadStep({ contractType, token, onNext, onBack }: Docu
                 </div>
                 {doc.file && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    {doc.file.name}
+                    {doc.file.name} ({formatFileSize(doc.file.size)})
                   </p>
+                )}
+                {doc.url && (
+                  <div className="mt-2">
+                    {doc.file?.type.startsWith('image/') ? (
+                      <img 
+                        src={doc.url} 
+                        alt={doc.label}
+                        className="h-20 w-20 object-cover rounded border"
+                      />
+                    ) : (
+                      <a 
+                        href={doc.url} 
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-primary hover:underline flex items-center gap-1"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Eye className="h-3 w-3" />
+                        Ver documento
+                      </a>
+                    )}
+                  </div>
                 )}
               </div>
 
-              {doc.url ? (
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleRemoveFile(index)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ) : (
+              <div className="flex flex-col items-end gap-2">
+                {doc.url ? (
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5 text-success" />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleRemoveFile(index)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
                 <label className="cursor-pointer">
                   <Button
                     type="button"
@@ -235,7 +277,11 @@ export function DocumentUploadStep({ contractType, token, onNext, onBack }: Docu
                     }}
                   />
                 </label>
-              )}
+                )}
+                {uploading && uploadProgress > 0 && (
+                  <Progress value={uploadProgress} className="w-32 h-2" />
+                )}
+              </div>
             </div>
           </Card>
         ))}

@@ -2,7 +2,9 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
-import { FileText } from "lucide-react";
+import { FileText, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { validateCPF, validateCNPJ } from "@/utils/documentValidator";
 
 interface ReviewStepProps {
   data: any;
@@ -14,6 +16,11 @@ interface ReviewStepProps {
 
 export function ReviewStep({ data, documents, onBack, onSubmit, isSubmitting }: ReviewStepProps) {
   const [confirmed, setConfirmed] = useState(false);
+  
+  // Validar CPF/CNPJ
+  const cpfValid = data.cpf ? validateCPF(data.cpf) : true;
+  const cnpjValid = data.cnpj ? validateCNPJ(data.cnpj) : true;
+  const documentsValid = cpfValid && cnpjValid;
 
   return (
     <div className="space-y-6">
@@ -72,6 +79,16 @@ export function ReviewStep({ data, documents, onBack, onSubmit, isSubmitting }: 
         </Card>
       </div>
 
+      {!documentsValid && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            {!cpfValid && <p>CPF inválido. Por favor, verifique o número informado.</p>}
+            {!cnpjValid && <p>CNPJ inválido. Por favor, verifique o número informado.</p>}
+          </AlertDescription>
+        </Alert>
+      )}
+
       <Card className="p-4 border-primary">
         <div className="flex items-start gap-3">
           <Checkbox
@@ -97,7 +114,7 @@ export function ReviewStep({ data, documents, onBack, onSubmit, isSubmitting }: 
         <Button
           type="button"
           onClick={onSubmit}
-          disabled={!confirmed || isSubmitting}
+          disabled={!confirmed || !documentsValid || isSubmitting}
         >
           {isSubmitting ? "Finalizando..." : "Finalizar Cadastro"}
         </Button>
