@@ -9,6 +9,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Employees from "./pages/Employees";
+import ArchivedEmployees from "./pages/ArchivedEmployees";
 import EmployeeForm from "./pages/EmployeeForm";
 import EmployeeDetail from "./pages/EmployeeDetail";
 import Roles from "./pages/Roles";
@@ -52,6 +53,7 @@ const App = () => (
             <Route path="/onboarding/:token" element={<OnboardingPortal />} />
             <Route path="/dashboard" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
             <Route path="/employees" element={<ProtectedRoute><AppLayout><Employees /></AppLayout></ProtectedRoute>} />
+            <Route path="/archived-employees" element={<ProtectedRoute><AppLayout><ArchivedEmployees /></AppLayout></ProtectedRoute>} />
             <Route path="/employees/new" element={<ProtectedRoute><AppLayout><EmployeeForm /></AppLayout></ProtectedRoute>} />
             <Route path="/employees/:id" element={<ProtectedRoute><AppLayout><EmployeeDetail /></AppLayout></ProtectedRoute>} />
             <Route path="/employees/:id/review" element={<ProtectedRoute><AppLayout><EmployeeReview /></AppLayout></ProtectedRoute>} />

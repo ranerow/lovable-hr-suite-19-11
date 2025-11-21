@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      archived_employees: {
+        Row: {
+          archive_reason: string | null
+          archived_at: string
+          archived_by: string | null
+          benefits: Json | null
+          created_at: string | null
+          documents: Json | null
+          edit_history: Json | null
+          employee_data: Json
+          id: string
+          notes: string | null
+          original_employee_id: string
+          status_history: Json | null
+          timesheets: Json | null
+          trainings: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          archive_reason?: string | null
+          archived_at?: string
+          archived_by?: string | null
+          benefits?: Json | null
+          created_at?: string | null
+          documents?: Json | null
+          edit_history?: Json | null
+          employee_data: Json
+          id?: string
+          notes?: string | null
+          original_employee_id: string
+          status_history?: Json | null
+          timesheets?: Json | null
+          trainings?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          archive_reason?: string | null
+          archived_at?: string
+          archived_by?: string | null
+          benefits?: Json | null
+          created_at?: string | null
+          documents?: Json | null
+          edit_history?: Json | null
+          employee_data?: Json
+          id?: string
+          notes?: string | null
+          original_employee_id?: string
+          status_history?: Json | null
+          timesheets?: Json | null
+          trainings?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       benefits: {
         Row: {
           active: boolean | null
