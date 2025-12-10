@@ -166,9 +166,6 @@ export default function Auth() {
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Cadastrando..." : "Cadastrar"}
                 </Button>
-                <p className="text-xs text-center text-muted-foreground mt-2">
-                  Para criar o usuário admin, use: ti@isssl.com.br com senha 123456
-                </p>
               </form>
             </TabsContent>
           </Tabs>
